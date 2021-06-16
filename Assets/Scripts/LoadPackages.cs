@@ -9,7 +9,7 @@ public abstract class LoadPackages
 #if UNITY_EDITOR
     private const string FolderPath = @"F:\!Source\DELETE\";
 #else
-    private const string Path = @"/storage/emulated/0/SITestFolder";
+    private const string FolderPath = @"/storage/emulated/0/SIGameMobile";
 #endif
 
 
