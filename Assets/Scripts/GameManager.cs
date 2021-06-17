@@ -26,42 +26,58 @@ public class GameManager : MonoBehaviour
 
     public Text DebugText;
 
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(this);
+        }
+    }
+
     private void Start()
     {
-        Instance = this;
-        PackagePath = Path.Combine("/!Source", "DELETE");
-        //"F:/!Source/DELETE";
+        //PackagePath = Path.Combine("/!Source", "DELETE");
 
+        PackagePath = GetDataFolder();
         //PackagePath = Path.Combine("/storage", "emulated", "0", "SIGameMobile");
+        //PackagePath = "/storage/emulated/0/SIGameMobile";
+        //PackagePath = Application.persistentDataPath + "/SIGameMobile";
         LoadPackageNames();
 
-        Dropdown.onValueChanged.AddListener(delegate
-        {
-            Dropdown_OnValueChanged(Dropdown);
-        });
 
         // TODO Save value on device
         Volume = 1f;
 
-        ChosenPackage = Path.Combine("/storage", "emulated", "0", "SIGameMobile", "Ugaday_melodiyu.siq");
-        CreateHostButton.interactable = true;
-        IsReadyToStart = true;
+//        ChosenPackage = Path.Combine("/storage", "emulated", "0", "SIGameMobile", "Ugaday_melodiyu.siq");
+//        CreateHostButton.interactable = true;
+//        IsReadyToStart = true;
 
-        DebugText.text = Path.Combine("/storage", "emulated", "0", "SIGameMobile", "Ugaday_melodiyu.siq");
+        //DebugText.text = PackagePath;
+        Dropdown.onValueChanged.AddListener(delegate
+        {
+            Dropdown_OnValueChanged(Dropdown);
+        });
     }
 
     public void LoadPackageNames()
     {
         if (!Directory.Exists(PackagePath))
         {
+            DebugText.text = "—оздана нова€ папка";
             Directory.CreateDirectory(PackagePath);
-            Debug.Log("Folder doesn't exist");
         }
         else
         {
-            Names = Directory.GetFiles(PackagePath, "*.siq").Select(Path.GetFileName).ToList();
+            DebugText.text = "—читываю архивы в папке";
+            //Names = Directory.GetFiles(PackagePath, "*.siq").Select(Path.GetFileName).ToList();
         }
 
+        //Names = Directory.GetFiles(PackagePath, "*.siq").Select(Path.GetFileName).ToList();
+        Names = Directory.GetFiles(PackagePath).Select(Path.GetFileName).ToList();
         Dropdown.AddOptions(Names);
     }
 
@@ -71,6 +87,7 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("Index changed");
             ChosenPackage = $"{PackagePath}/{Names[dropdown.value - 1]}";
+
             DebugText.text = ChosenPackage;
             CreateHostButton.interactable = true;
             IsReadyToStart = true;
@@ -79,5 +96,12 @@ public class GameManager : MonoBehaviour
         {
             CreateHostButton.interactable = false;
         }
+    }
+
+    public static string GetDataFolder()
+    {
+        var temp = (Application.persistentDataPath.Replace("Android", "")).Split(new string[] { "//" }, System.StringSplitOptions.None);
+
+        return (temp[0] + "/SIGameMobile");
     }
 }

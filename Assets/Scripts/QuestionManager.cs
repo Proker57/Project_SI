@@ -52,6 +52,7 @@ namespace BOYAREngine.Game
             _answerPanel.SetActive(false);
 
             _scenario.text = null;
+            Audio.GetComponent<AudioSource>().clip = null;
 
             var round = _si.Round;
             if (_si.Rounds[round].Themes[themeIndex].Questions[questionIndex].Scenario != null )
@@ -59,20 +60,31 @@ namespace BOYAREngine.Game
                 _scenario.text = _si.Rounds[round].Themes[themeIndex].Questions[questionIndex].Scenario;
             }
 
-            if (_si.Rounds[round].Themes[themeIndex].Questions[questionIndex].AudioData != null)
+            if (_si.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsMusic)
             {
                 Audio.SetActive(true);
 
                 Audio.GetComponent<AudioSource>().clip = _si.Rounds[round].Themes[themeIndex].Questions[questionIndex].Clip;
                 Audio.GetComponent<AudioSource>().Play();
             }
+            else
+            {
+                Audio.GetComponent<AudioSource>().clip = null;
+                Audio.SetActive(false);
+            }
 
-            if (_si.Rounds[round].Themes[themeIndex].Questions[questionIndex].Image != null)
+            if (_si.Rounds[round].Themes[themeIndex].Questions[questionIndex].isImage)
             {
                 _image.gameObject.SetActive(true);
+
                 var img = _si.Rounds[round].Themes[themeIndex].Questions[questionIndex].Image;
                 var tex = Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(.5f, .5f));
                 _image.sprite = tex;
+            }
+            else
+            {
+                _image.sprite = null;
+                _image.gameObject.SetActive(false);
             }
 
             StartCoroutine(AnswerCountdown());

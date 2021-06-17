@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+using System.IO;
+using NLayer;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,6 +14,8 @@ namespace BOYAREngine.Game
 
         [SerializeField] private GameObject _themePrefab;
         [SerializeField] private GameObject _questionPrefab;
+
+        private AudioClip _audioClip;
 
         public void Init()
         {
@@ -36,7 +39,20 @@ namespace BOYAREngine.Game
 
                         if (SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].AudioData != null)
                         {
-                            SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].Clip = NAudioPlayer.FromMp3Data(SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].AudioData);
+                            using (var ms = new MemoryStream(SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].AudioData))
+                            {
+                                //var mpeg = new MpegFile(ms);
+                                using (var mpeg = new MpegFile(ms))
+                                {
+                                    var samples = new float[mpeg.Length];
+                                    mpeg.ReadSamples(samples, 0, samples.Length);
+
+                                    _audioClip = AudioClip.Create("Name", samples.Length, mpeg.Channels, mpeg.SampleRate, false);
+                                    _audioClip.SetData(samples, 0);
+                                    SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].Clip = _audioClip;
+                                }
+                                
+                            }
                         }
                     }
                 }

@@ -21,7 +21,6 @@ namespace BOYAREngine.Parser
         private string _scenario;
         private string _type;
         private byte[] _audioData;
-        private string _songName;
         private AudioClip _clip;
         private Texture2D _image;
 
@@ -81,7 +80,6 @@ namespace BOYAREngine.Parser
                                         if (questionsNode.Name == "info")
                                         {
                                             _info = questionsNode.FirstChild.InnerText;
-                                            //_questionsIteration++;
                                             continue;
                                         }
 
@@ -93,7 +91,6 @@ namespace BOYAREngine.Parser
                                     {
                                         foreach (XmlNode questionNode in questionsNode)
                                         {
-
                                             if (questionNode.Name == "question")
                                             {
                                                 // Reload AnswerList
@@ -104,104 +101,113 @@ namespace BOYAREngine.Parser
                                                 _type = null;
 
                                                 // <question data>
+                                                bool skipType = false, skipScenario = false, skipRight = false, skipWrong = false;
                                                 foreach (XmlNode questionChild in questionNode.ChildNodes)
                                                 {
-
-                                                    // <type>
-                                                    if (questionChild.Name == "type")
+                                                    if (!skipType)
                                                     {
-                                                        _type = questionChild.Attributes?["name"].Value;
+                                                        // <type>
+                                                        if (questionChild.Name == "type")
+                                                        {
+                                                            _type = questionChild.Attributes?["name"].Value;
+                                                            skipType = true;
+                                                            continue;
+                                                        }
                                                     }
 
-                                                    // <scenario>
-                                                    if (questionChild.Name == "scenario")
+                                                    if (!skipScenario)
                                                     {
-                                                        // <atom>
-                                                        foreach (XmlNode atom in questionChild.ChildNodes)
+                                                        // <scenario>
+                                                        if (questionChild.Name == "scenario")
                                                         {
-                                                            _image = null;
-
-                                                            // Has Attribute
-                                                            if (atom.Attributes?["type"] != null)
+                                                            // <atom>
+                                                            foreach (XmlNode atom in questionChild.ChildNodes)
                                                             {
-                                                                // Image
-                                                                if (atom.Attributes?["type"].Value == "image")
-                                                                {
-                                                                    var tex = new Texture2D(2, 2);
-                                                                    var imagePath = atom.InnerText;
-                                                                    var image = archive.GetEntry("Images/" + Uri.EscapeUriString(imagePath).Trim('@'));
-                                                                    if (image != null)
-                                                                    {
-                                                                        var imageData = new byte[image.Length];
-                                                                        image.Open().Read(imageData, 0, imageData.Length);
-                                                                        tex.LoadImage(imageData);
-
-                                                                        //_scenario = null;
-                                                                        _image = tex;
-                                                                        _songName = null;
-                                                                        _audioData = null;
-                                                                    }
-                                                                }
-
-                                                                // Audio
-                                                                if (atom.Attributes?["type"].Value == "voice")
-                                                                {
-                                                                    var audioPath = atom.InnerText;
-                                                                    var audio = archive.GetEntry("Audio/" + Uri.EscapeUriString(audioPath).Trim('@'));
-                                                                    if (audio != null)
-                                                                    {
-                                                                        var buffer = new byte[audio.Length];
-                                                                        using (var stream = audio.Open())
-                                                                            stream.Read(buffer, 0, buffer.Length);
-                                                                        using (var ms = new MemoryStream(buffer))
-                                                                            _audioData = ms.ToArray();
-
-                                                                        _image = null;
-                                                                        _songName = audioPath;
-                                                                    }
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                _scenario = atom.InnerText;
                                                                 _image = null;
-                                                                _songName = null;
-                                                                _audioData = null;
+
+                                                                // Has Attribute
+                                                                if (atom.Attributes?["type"] != null)
+                                                                {
+                                                                    // Image
+                                                                    if (atom.Attributes?["type"].Value == "image")
+                                                                    {
+                                                                        var tex = new Texture2D(2, 2);
+                                                                        var imagePath = atom.InnerText;
+                                                                        var image = archive.GetEntry("Images/" + Uri.EscapeUriString(imagePath).Trim('@'));
+                                                                        if (image != null)
+                                                                        {
+                                                                            var imageData = new byte[image.Length];
+                                                                            image.Open().Read(imageData, 0, imageData.Length);
+                                                                            tex.LoadImage(imageData);
+
+                                                                            _image = tex;
+                                                                            _audioData = null;
+                                                                        }
+                                                                    }
+
+                                                                    // Audio
+                                                                    if (atom.Attributes?["type"].Value == "voice")
+                                                                    {
+                                                                        var audioPath = atom.InnerText;
+                                                                        var audio = archive.GetEntry("Audio/" + Uri.EscapeUriString(audioPath).Trim('@'));
+                                                                        if (audio != null)
+                                                                        {
+                                                                            var buffer = new byte[audio.Length];
+                                                                            using (var stream = audio.Open())
+                                                                                stream.Read(buffer, 0, buffer.Length);
+                                                                            using (var ms = new MemoryStream(buffer))
+                                                                                _audioData = ms.ToArray();
+
+                                                                            _image = null;
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    _scenario = atom.InnerText;
+                                                                    _image = null;
+                                                                    _audioData = null;
+                                                                }
                                                             }
                                                         }
+                                                        skipScenario = true;
+                                                        continue;
                                                     }
 
-                                                    // <right>
-                                                    if (questionChild.Name == "right")
+                                                    if (!skipRight)
                                                     {
-                                                        foreach (XmlNode answer in questionChild.ChildNodes)
+                                                        // <right>
+                                                        if (questionChild.Name == "right")
                                                         {
-                                                            _answers.Add(answer.InnerText);
+                                                            foreach (XmlNode answer in questionChild.ChildNodes)
+                                                            {
+                                                                _answers.Add(answer.InnerText);
+                                                            }
                                                         }
+                                                        skipRight = true;
+                                                        continue;
                                                     }
 
-                                                    // <wrong>
-                                                    if (questionChild.Name == "wrong")
+                                                    if (!skipWrong)
                                                     {
-                                                        // TODO: wrong list
+                                                        // <wrong>
+                                                        if (questionChild.Name == "wrong")
+                                                        {
+                                                            // TODO: wrong list
+                                                        }
+                                                        skipWrong = true;
+                                                        continue;
                                                     }
-
 
                                                 }
 
                                                 // Add Question in List
-                                                _questions.Add(new Question(_price, _scenario, _answers, _type, _audioData, _songName, _clip, _image));
+                                                _questions.Add(new Question(_price, _scenario, _answers, _type, _audioData, _clip, _image));
                                             }
                                         }
 
                                         _questionsIteration = 0;
                                     }
-
-                                    // Check for final iteration
-//                                    if (_questionsIteration == themeNode.ChildNodes.Count)
-//                                    {
-//                                        _questionsIteration = 0;
-//                                    }
 
                                     // Add Theme in List
                                     _themes.Add(new Theme(_themeName, _questions, _info));

@@ -9,20 +9,30 @@ public class Question
     public string Scenario;
     public string Type;
     [HideInInspector] public byte[] AudioData;
-    public string SongName;
     public AudioClip Clip;
     public Texture2D Image;
     public List<string> Answers;
+    public bool IsMusic;
+    public bool isImage;
 
-    public Question(string price, string scenario, List<string> answers, string type = null, byte[] audioData = null, string songName = null, AudioClip clip = null, Texture2D image = null)
+    public Question(string price, string scenario, List<string> answers, string type = null, byte[] audioData = null, AudioClip clip = null, Texture2D image = null)
     {
         Price = price;
         Scenario = scenario;
         Answers = answers;
         AudioData = audioData;
-        SongName = songName;
         Clip = clip;
         Type = type;
         Image = image;
+
+        if (audioData != null)
+        {
+            IsMusic = true;
+        }
+
+        if (image != null)
+        {
+            isImage = true;
+        }
     }
 }
