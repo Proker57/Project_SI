@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using MLAPI.NetworkVariable;
+using MLAPI.NetworkVariable.Collections;
+using MLAPI.Serialization;
 
 [Serializable]
 public class Theme
@@ -11,7 +14,7 @@ public class Theme
     public Theme(string name, List<Question> questions, string info = null)
     {
         Name = name;
-        Questions = questions;
         Info = info;
+        Questions = questions;
     }
 }

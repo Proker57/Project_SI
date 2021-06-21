@@ -4,30 +4,36 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Xml;
+using MLAPI.NetworkVariable;
+using MLAPI.NetworkVariable.Collections;
 using UnityEngine;
 
 namespace BOYAREngine.Parser
 {
     public class SiqParser
     {
+        // Round
         private string _roundName;
         public List<Round> Rounds = new List<Round>();
 
+        // Theme
         private string _themeName;
         private string _info;
-        private List<Theme> _themes = new List<Theme>();
+        private List<Theme> _themes;
 
+        // Question
         private string _price;
         private string _scenario;
         private string _type;
         private byte[] _audioData;
-        private AudioClip _clip;
-        private Texture2D _image;
+        private byte[] _imageData;
+        //private AudioClip _clip;
+        //private Texture2D _image;
 
         private List<string> _answers = new List<string>();
         private List<Question> _questions = new List<Question>();
 
-
+        // Local logic
         private int _questionsIteration;
         private int _atomIteration;
 
@@ -123,7 +129,8 @@ namespace BOYAREngine.Parser
                                                             // <atom>
                                                             foreach (XmlNode atom in questionChild.ChildNodes)
                                                             {
-                                                                _image = null;
+                                                                //_image = null;
+                                                                _imageData = null;
 
                                                                 // Has Attribute
                                                                 if (atom.Attributes?["type"] != null)
@@ -131,16 +138,17 @@ namespace BOYAREngine.Parser
                                                                     // Image
                                                                     if (atom.Attributes?["type"].Value == "image")
                                                                     {
-                                                                        var tex = new Texture2D(2, 2);
+                                                                        //var tex = new Texture2D(2, 2);
                                                                         var imagePath = atom.InnerText;
                                                                         var image = archive.GetEntry("Images/" + Uri.EscapeUriString(imagePath).Trim('@'));
                                                                         if (image != null)
                                                                         {
                                                                             var imageData = new byte[image.Length];
                                                                             image.Open().Read(imageData, 0, imageData.Length);
-                                                                            tex.LoadImage(imageData);
+                                                                            _imageData = imageData;
+                                                                            //tex.LoadImage(imageData);
 
-                                                                            _image = tex;
+                                                                            //_image = tex;
                                                                             _audioData = null;
                                                                         }
                                                                     }
@@ -158,14 +166,17 @@ namespace BOYAREngine.Parser
                                                                             using (var ms = new MemoryStream(buffer))
                                                                                 _audioData = ms.ToArray();
 
-                                                                            _image = null;
+                                                                            //_image = null;
+                                                                            _imageData = null;
+                                                                            _scenario = null;
                                                                         }
                                                                     }
                                                                 }
                                                                 else
                                                                 {
                                                                     _scenario = atom.InnerText;
-                                                                    _image = null;
+                                                                    //_image = null;
+                                                                    _imageData = null;
                                                                     _audioData = null;
                                                                 }
                                                             }
@@ -202,7 +213,7 @@ namespace BOYAREngine.Parser
                                                 }
 
                                                 // Add Question in List
-                                                _questions.Add(new Question(_price, _scenario, _answers, _type, _audioData, _clip, _image));
+                                                _questions.Add(new Question(_price, _scenario, _answers, _type, _audioData, _imageData));
                                             }
                                         }
 

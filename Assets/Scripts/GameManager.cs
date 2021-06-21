@@ -1,29 +1,35 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MLAPI;
+using MLAPI.NetworkVariable;
+using MLAPI.NetworkVariable.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance;
-    public enum StateMachine
-    {
-        MainMenu,
-        Start
-    }
-    public StateMachine State;
 
+    [Header("UI")]
     public Button CreateHostButton;
-    public List<string> Names;
+    public List<string> PackageFileNames;
     public Dropdown Dropdown;
 
+    [Header("Vars")]
     public string PackagePath;
     public string ChosenPackage;
     public float Volume;
     public bool IsReadyToStart;
 
+    [Header("Game Data")]
+    public NetworkList<string> NetThemeNames = new NetworkList<string>();
+    public NetworkDictionary<Vector2, string> NetQuestionPrice = new NetworkDictionary<Vector2, string>();
+    public NetworkVariable<byte> NetQuestionRowCount = new NetworkVariable<byte>();
+    public NetworkVariable<byte> NetQuestionColumnCount = new NetworkVariable<byte>();
 
+    //
     public Text DebugText;
 
     private void Awake()
@@ -40,23 +46,19 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        //PackagePath = Path.Combine("/!Source", "DELETE");
+        PackagePath = Path.Combine("/!Source", "DELETE");
 
-        PackagePath = GetDataFolder();
-        //PackagePath = Path.Combine("/storage", "emulated", "0", "SIGameMobile");
-        //PackagePath = "/storage/emulated/0/SIGameMobile";
-        //PackagePath = Application.persistentDataPath + "/SIGameMobile";
+        //PackagePath = "/storage/emulated/0/Android/media/com.BOYAREGames.SiGameMobile";
+
         LoadPackageNames();
-
 
         // TODO Save value on device
         Volume = 1f;
 
-//        ChosenPackage = Path.Combine("/storage", "emulated", "0", "SIGameMobile", "Ugaday_melodiyu.siq");
-//        CreateHostButton.interactable = true;
-//        IsReadyToStart = true;
+        // TODO DELETE
+        DebugText.text = PackagePath;
 
-        //DebugText.text = PackagePath;
+
         Dropdown.onValueChanged.AddListener(delegate
         {
             Dropdown_OnValueChanged(Dropdown);
@@ -67,18 +69,11 @@ public class GameManager : MonoBehaviour
     {
         if (!Directory.Exists(PackagePath))
         {
-            DebugText.text = "—оздана нова€ папка";
             Directory.CreateDirectory(PackagePath);
         }
-        else
-        {
-            DebugText.text = "—читываю архивы в папке";
-            //Names = Directory.GetFiles(PackagePath, "*.siq").Select(Path.GetFileName).ToList();
-        }
 
-        //Names = Directory.GetFiles(PackagePath, "*.siq").Select(Path.GetFileName).ToList();
-        Names = Directory.GetFiles(PackagePath).Select(Path.GetFileName).ToList();
-        Dropdown.AddOptions(Names);
+        PackageFileNames = Directory.GetFiles(PackagePath, "*.siq").Select(Path.GetFileName).ToList();
+        Dropdown.AddOptions(PackageFileNames);
     }
 
     public void Dropdown_OnValueChanged(Dropdown dropdown)
@@ -86,7 +81,7 @@ public class GameManager : MonoBehaviour
         if (dropdown.value != 0)
         {
             Debug.Log("Index changed");
-            ChosenPackage = $"{PackagePath}/{Names[dropdown.value - 1]}";
+            ChosenPackage = $"{PackagePath}/{PackageFileNames[dropdown.value - 1]}";
 
             DebugText.text = ChosenPackage;
             CreateHostButton.interactable = true;
@@ -96,12 +91,5 @@ public class GameManager : MonoBehaviour
         {
             CreateHostButton.interactable = false;
         }
-    }
-
-    public static string GetDataFolder()
-    {
-        var temp = (Application.persistentDataPath.Replace("Android", "")).Split(new string[] { "//" }, System.StringSplitOptions.None);
-
-        return (temp[0] + "/SIGameMobile");
     }
 }

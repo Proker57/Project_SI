@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using BOYAREngine.Parser;
+using MLAPI;
 using UnityEngine;
 
-public class SiGameMobile : MonoBehaviour
+public class SiGameMobile : NetworkBehaviour
 {
     public static SiGameMobile Instance;
 
@@ -25,7 +26,7 @@ public class SiGameMobile : MonoBehaviour
         }
     }
 
-    public void StartGame()
+    public void ParsePackage()
     {
         Debug.Log("GameStarted");
         var p = new SiqParser();
@@ -35,5 +36,10 @@ public class SiGameMobile : MonoBehaviour
         p.Parser(package);
         Debug.Log("Parsed");
         Rounds = p.Rounds;
+    }
+
+    public void JoinGame()
+    {
+        Debug.Log("Joined to the game");
     }
 }

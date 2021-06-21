@@ -1,11 +1,12 @@
 using System.Collections;
 using BOYAREngine.Audio;
+using MLAPI;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace BOYAREngine.Game
 {
-    public class QuestionManager : MonoBehaviour
+    public class QuestionManager : NetworkBehaviour
     {
         public static QuestionManager Instance;
 
@@ -64,7 +65,7 @@ namespace BOYAREngine.Game
             {
                 Audio.SetActive(true);
 
-                Audio.GetComponent<AudioSource>().clip = _si.Rounds[round].Themes[themeIndex].Questions[questionIndex].Clip;
+                //Audio.GetComponent<AudioSource>().clip = _si.Rounds[round].Themes[themeIndex].Questions[questionIndex].Clip;
                 Audio.GetComponent<AudioSource>().Play();
             }
             else
@@ -73,13 +74,13 @@ namespace BOYAREngine.Game
                 Audio.SetActive(false);
             }
 
-            if (_si.Rounds[round].Themes[themeIndex].Questions[questionIndex].isImage)
+            if (_si.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsImage)
             {
                 _image.gameObject.SetActive(true);
 
-                var img = _si.Rounds[round].Themes[themeIndex].Questions[questionIndex].Image;
-                var tex = Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(.5f, .5f));
-                _image.sprite = tex;
+                //var img = _si.Rounds[round].Themes[themeIndex].Questions[questionIndex].Image;
+                //var tex = Sprite.Create(img, new Rect(0, 0, img.width, img.height), new Vector2(.5f, .5f));
+                //_image.sprite = tex;
             }
             else
             {
