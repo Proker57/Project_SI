@@ -4,11 +4,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Xml;
-using MLAPI.NetworkVariable;
-using MLAPI.NetworkVariable.Collections;
-using UnityEngine;
 
-namespace BOYAREngine.Parser
+namespace Parse
 {
     public class SiqParser
     {
@@ -41,12 +38,6 @@ namespace BOYAREngine.Parser
         {
             using (var archive = ZipFile.Open(packagePath, ZipArchiveMode.Read, Encoding.UTF8))
             {
-                Debug.Log("Zip Read");
-                foreach (var entry in archive.Entries)
-                {
-                    //Debug.Log(entry.FullName);
-                }
-
                 var content = archive.GetEntry("content.xml");
                 using (var contentReader = new StreamReader(content?.Open() ?? throw new ArgumentNullException()))
                 {

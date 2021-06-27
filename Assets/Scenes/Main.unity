@@ -155,6 +155,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c52f5af9a2d7689449671ceb387b4265, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Rounds: []
+  ThemeIndexCurrent: 0
+  QuestionIndexCurrent: 0
+  Round: 0
   CreateHostButton: {fileID: 601673454}
   PackageFileNames: []
   Dropdown: {fileID: 74439553}
@@ -197,7 +201,7 @@ MonoBehaviour:
   _gameStateGameObject: {fileID: 693194920052850204}
   _themeParentGameObject: {fileID: 693194919593600470}
   _themePrefab: {fileID: 98643710558475870, guid: bb11838c776962a47a068bf780dfedf9, type: 3}
-  _questionPrefab: {fileID: 5541780023296149762, guid: bda3eaefc1152d14d88413557f2d8e32, type: 3}
+  _questionPrefab: {fileID: 277221039489325451, guid: bda3eaefc1152d14d88413557f2d8e32, type: 3}
   _playerPrefab: {fileID: 802538931297311120, guid: a0da6244165d15f4181c16f5db0558f4, type: 3}
   _playerSpawnParent: {fileID: 693194918298889228}
 --- !u!114 &39253965
@@ -582,6 +586,8 @@ GameObject:
   m_Component:
   - component: {fileID: 303406652}
   - component: {fileID: 303406653}
+  - component: {fileID: 303406654}
+  - component: {fileID: 303406655}
   m_Layer: 0
   m_Name: QuestionManager
   m_TagString: Untagged
@@ -618,12 +624,41 @@ MonoBehaviour:
   _themePanel: {fileID: 693194919593600471}
   _questionPanel: {fileID: 693194918820477347}
   _answerPanel: {fileID: 693194918286103871}
-  Audio: {fileID: 693194918851673088}
+  AudioSource: {fileID: 693194918851673098}
   _image: {fileID: 693194918466096983}
   _scenario: {fileID: 693194919979799654}
   _answer: {fileID: 693194918657892099}
   _answerTimer: 10
   _backToThemeTimer: 3
+--- !u!114 &303406654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 303406651}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  NetworkInstanceId: 0
+  PrefabHash: 12365253424149232958
+  PrefabHashGenerator: QuestionManager
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
+--- !u!114 &303406655
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 303406651}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61d776c8b3de9bf459a2f72b3c79583f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &345975421
 GameObject:
   m_ObjectHideFlags: 0
@@ -986,7 +1021,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 426192754}
-  - component: {fileID: 426192755}
   m_Layer: 0
   m_Name: Main
   m_TagString: Untagged
@@ -1009,22 +1043,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &426192755
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 426192753}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d909e8d376810f34fa9430a5f84356ef, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Rounds: []
-  ThemeIndexCurrent: 0
-  QuestionIndexCurrent: 0
-  Round: 0
 --- !u!1 &464990766
 GameObject:
   m_ObjectHideFlags: 0
@@ -1596,7 +1614,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MessageBufferSize: 5120
-  MaxConnections: 100
+  MaxConnections: 6
   MaxSentMessageQueueSize: 128
   ConnectAddress: 127.0.0.1
   ConnectPort: 7777
@@ -4067,7 +4085,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 693194919660784925}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: BOYAREngine.Game.ShowAnswer, Assembly-CSharp
         m_MethodName: Show
         m_Mode: 1
@@ -4079,18 +4097,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &693194919660784925
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 693194919660784927}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45e51456e27d53242b0726002393fe94, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &693194919660784926
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4123,7 +4129,6 @@ GameObject:
   - component: {fileID: 693194919660784922}
   - component: {fileID: 693194919660784923}
   - component: {fileID: 693194919660784924}
-  - component: {fileID: 693194919660784925}
   m_Layer: 5
   m_Name: ShowAnswer
   m_TagString: Untagged
@@ -4387,7 +4392,7 @@ RectTransform:
   m_GameObject: {fileID: 693194920249816327}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 693194919632964522}
   - {fileID: 693194919408780599}

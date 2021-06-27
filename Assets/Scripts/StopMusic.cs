@@ -7,7 +7,7 @@ namespace BOYAREngine.Audio
     {
         public void Stop()
         {
-            QuestionManager.Instance.Audio.GetComponent<AudioSource>().Stop();
+            QuestionManager.Instance.AudioSource.Stop();
         }
     }
 }

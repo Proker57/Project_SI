@@ -1,16 +1,23 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MLAPI;
 using MLAPI.NetworkVariable;
 using MLAPI.NetworkVariable.Collections;
+using Parse;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance;
+
+    [Header("Logic")]
+    public List<Round> Rounds;
+
+    public int ThemeIndexCurrent;
+    public int QuestionIndexCurrent;
+    public int Round;
 
     [Header("UI")]
     public Button CreateHostButton;
@@ -58,7 +65,6 @@ public class GameManager : NetworkBehaviour
         // TODO DELETE
         DebugText.text = PackagePath;
 
-
         Dropdown.onValueChanged.AddListener(delegate
         {
             Dropdown_OnValueChanged(Dropdown);
@@ -74,6 +80,16 @@ public class GameManager : NetworkBehaviour
 
         PackageFileNames = Directory.GetFiles(PackagePath, "*.siq").Select(Path.GetFileName).ToList();
         Dropdown.AddOptions(PackageFileNames);
+    }
+
+    public void ParsePackage()
+    {
+        var p = new SiqParser();
+        var package = ChosenPackage;
+
+
+        p.Parser(package);
+        Rounds = p.Rounds;
     }
 
     public void Dropdown_OnValueChanged(Dropdown dropdown)

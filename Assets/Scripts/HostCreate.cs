@@ -17,7 +17,7 @@ namespace BOYAREngine.Game
 
         [Header("Game Prefabs")]
         [SerializeField] private GameObject _themePrefab;
-        [SerializeField] private GameObject _questionPrefab;
+        [SerializeField] private NetworkObject _questionPrefab;
 
         [Header("Player setup")]
         [SerializeField] private GameObject _playerPrefab;
@@ -44,68 +44,43 @@ namespace BOYAREngine.Game
             // Check if Package is chosen
             if (GameManager.Instance.IsReadyToStart)
             {
+                // Change State
+                SetGameStarted(true);
+
                 // Parse Package from folder
-                SiGameMobile.Instance.ParsePackage();
-                var round = SiGameMobile.Instance.Round;
+                //Parse.Instance.ParsePackage();
+                GameManager.Instance.ParsePackage();
+                var round = GameManager.Instance.Round;
 
                 // TODO: Fix this
-                GameManager.Instance.NetQuestionRowCount.Value = (byte)SiGameMobile.Instance.Rounds[round].Themes[0].Questions.Count;
-                GameManager.Instance.NetQuestionColumnCount.Value = (byte) SiGameMobile.Instance.Rounds[round].Themes.Count;
+                GameManager.Instance.NetQuestionRowCount.Value = (byte)GameManager.Instance.Rounds[round].Themes[0].Questions.Count;
+                GameManager.Instance.NetQuestionColumnCount.Value = (byte)GameManager.Instance.Rounds[round].Themes.Count;
 
-                for (var i = 0; i < SiGameMobile.Instance.Rounds[round].Themes.Count; i++)
+                for (var i = 0; i < GameManager.Instance.Rounds[round].Themes.Count; i++)
                 {
                     // Spawn Theme Object on server
                     var theme = Instantiate(_themePrefab, _themeParentGameObject.transform);
                     theme.GetComponent<NetworkObject>().Spawn();
                     // Add Theme names to the game data list
-                    GameManager.Instance.NetThemeNames.Add(SiGameMobile.Instance.Rounds[round].Themes[i].Name);
+                    GameManager.Instance.NetThemeNames.Add(GameManager.Instance.Rounds[round].Themes[i].Name);
                     // Set name to Theme object
-                    theme.GetComponentInChildren<Text>().text = SiGameMobile.Instance.Rounds[round].Themes[i].Name;
+                    theme.GetComponentInChildren<Text>().text = GameManager.Instance.Rounds[round].Themes[i].Name;
 
-                    for (var j = 0; j < SiGameMobile.Instance.Rounds[round].Themes[i].Questions.Count; j++)
+                    for (var j = 0; j < GameManager.Instance.Rounds[round].Themes[i].Questions.Count; j++)
                     {
                         // Spawn Question Object on server
                         var question = Instantiate(_questionPrefab, theme.transform);
                         question.GetComponent<NetworkObject>().Spawn();
-                        // Add Quesntion Price the the game data list
-                        GameManager.Instance.NetQuestionPrice.Add(new Vector2(i, j), SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].Price);
+                        // Add Question Price the the game data list
+                        GameManager.Instance.NetQuestionPrice.Add(new Vector2(i, j), GameManager.Instance.Rounds[round].Themes[i].Questions[j].Price);
                         // Set price to the object
-                        question.GetComponentInChildren<Text>().text = SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].Price;
+                        question.GetComponentInChildren<Text>().text = GameManager.Instance.Rounds[round].Themes[i].Questions[j].Price;
                         // Set indexes to the question
                         var questionButton = question.GetComponent<QuestionButton>();
                         questionButton.ThemeIndex = i;
                         questionButton.QuestionIndex = j;
-
-                        // Audio
-                        if (SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].AudioData != null)
-                        {
-                            using (var ms = new MemoryStream(SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].AudioData))
-                            {
-                                //var mpeg = new MpegFile(ms);
-                                using (var mpeg = new MpegFile(ms))
-                                {
-                                    var samples = new float[mpeg.Length];
-                                    mpeg.ReadSamples(samples, 0, samples.Length);
-
-                                    _audioClip = AudioClip.Create("Name", samples.Length, mpeg.Channels, mpeg.SampleRate, false);
-                                    _audioClip.SetData(samples, 0);
-                                    //SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].Clip = _audioClip;
-                                }
-
-                            }
-                        }
-
-                        // Image
-                        if (SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].ImageData != null)
-                        {
-                            var tex = new Texture2D(2, 2);
-                            tex.LoadImage(SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].ImageData);
-                            //SiGameMobile.Instance.Rounds[round].Themes[i].Questions[j].Image = tex;
-                        }
                     }
                 }
-
-                SetGameStarted(true);
             }
         }
 
@@ -140,10 +115,9 @@ namespace BOYAREngine.Game
 
         private IEnumerator FindQuestions()
         {
-            yield return new WaitForSeconds(.5f);
+            yield return new WaitForSeconds(.2f);
 
             var questions = GameObject.FindGameObjectsWithTag("Question");
-            Debug.Log(questions.Length);
             var index = 0;
             for (var i = 0; i < GameManager.Instance.NetQuestionColumnCount.Value; i++)
             {
@@ -158,7 +132,7 @@ namespace BOYAREngine.Game
         private IEnumerator FindPlayers()
         {
             yield return new WaitForSeconds(.5f);
-            // TODO: Don't work but why?
+
             var players = GameObject.FindGameObjectsWithTag("Player");
             foreach (var player in players)
             {
