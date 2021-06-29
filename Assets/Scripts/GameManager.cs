@@ -23,12 +23,18 @@ public class GameManager : NetworkBehaviour
     public Button CreateHostButton;
     public List<string> PackageFileNames;
     public Dropdown Dropdown;
+    public InputField InputName;
 
     [Header("Vars")]
     public string PackagePath;
     public string ChosenPackage;
     public float Volume;
     public bool IsReadyToStart;
+
+    [Header("Player Data")]
+    public NetworkList<ulong> PlayersList = new NetworkList<ulong>(new NetworkVariableSettings{ ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.Everyone});
+    public string Name;
+    public int Points;
 
     [Header("Game Data")]
     public NetworkList<string> NetThemeNames = new NetworkList<string>();
@@ -69,6 +75,11 @@ public class GameManager : NetworkBehaviour
         {
             Dropdown_OnValueChanged(Dropdown);
         });
+
+        InputName.onValueChanged.AddListener(delegate
+        {
+            InputField_OnNameChanged(InputName);
+        });
     }
 
     public void LoadPackageNames()
@@ -106,6 +117,14 @@ public class GameManager : NetworkBehaviour
         else
         {
             CreateHostButton.interactable = false;
+        }
+    }
+
+    public void InputField_OnNameChanged(InputField input)
+    {
+        if (input.text != null)
+        {
+            Name = input.text;
         }
     }
 }

@@ -1,7 +1,5 @@
 using System.Collections;
-using System.IO;
 using BOYAREngine.Net;
-using NLayer;
 using UnityEngine;
 using UnityEngine.UI;
 using MLAPI;
@@ -137,6 +135,8 @@ namespace BOYAREngine.Game
             foreach (var player in players)
             {
                 player.transform.SetParent(_playerSpawnParent);
+                player.GetComponent<PlayerData>().Name.Value = GameManager.Instance.Name;
+                player.GetComponent<PlayerData>().Points.Value = GameManager.Instance.Points;
             }
         }
 

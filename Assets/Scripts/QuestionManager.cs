@@ -1,15 +1,10 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using BOYAREngine.Net;
 using MLAPI;
 using MLAPI.Messaging;
 using MLAPI.NetworkVariable;
-using MLAPI.NetworkVariable.Collections;
-using MLAPI.Transports;
 using NLayer;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,6 +19,7 @@ namespace BOYAREngine.Game
         [SerializeField] private GameObject _themePanel;
         [SerializeField] private GameObject _questionPanel;
         [SerializeField] private GameObject _answerPanel;
+        [SerializeField] private GameObject _answerDecideHostPanel;
 
         [Header("Content")]
         //public GameObject AudioGameObject;
@@ -67,9 +63,14 @@ namespace BOYAREngine.Game
             _themePanel.SetActive(false);
             _questionPanel.SetActive(true);
             _answerPanel.SetActive(false);
+            _answerDecideHostPanel.SetActive(true);
+
+            AudioSource.gameObject.SetActive(false);
+            _image.gameObject.SetActive(false);
 
             _scenario.text = null;
             AudioSource.clip = null;
+            _image.sprite = null;
 
             var round = GameManager.Instance.Round;
             if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Scenario != null )
@@ -98,11 +99,6 @@ namespace BOYAREngine.Game
 
                 AudioSource.Play();
             }
-            else
-            {
-                AudioSource.clip = null;
-                AudioSource.gameObject.SetActive(false);
-            }
 
             // Image
             if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsImage)
@@ -127,11 +123,6 @@ namespace BOYAREngine.Game
                 tex.LoadImage(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageData);
                 _image.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
             }
-            else
-            {
-                _image.sprite = null;
-                _image.gameObject.SetActive(false);
-            }
 
             Invoke(nameof(AnswerCountdown), _answerTimer);
         }
@@ -151,29 +142,14 @@ namespace BOYAREngine.Game
         {
             _scenario.text = _netScenario.Value;
 
-            // Audio
             AudioSource.gameObject.SetActive(false);
             AudioSource.clip = null;
-            // Image
             _image.gameObject.SetActive(false);
-            //_image.sprite = null;
 
             // Audio
             if (_netIsAudio.Value)
             {
                 AudioSource.gameObject.SetActive(true);
-
-                //                using (var ms = new MemoryStream(_netAudioData.Value))
-                //                {
-                //                    using (var mpeg = new MpegFile(ms))
-                //                    {
-                //                        var samples = new float[mpeg.Length];
-                //                        mpeg.ReadSamples(samples, 0, samples.Length);
-                //
-                //                        AudioSource.clip = AudioClip.Create("Name", samples.Length, mpeg.Channels, mpeg.SampleRate, false);
-                //                        AudioSource.clip.SetData(samples, 0);
-                //                    }
-                //                }
             }
 
             // Image
