@@ -12,11 +12,16 @@ namespace BOYAREngine.Game
         public void OnQuestion()
         {
             // TODO: Check Id
-            if (NetworkManager.Singleton.IsServer)
+            if (IsOwner && IsHost)
             {
                 ShowQuestionHost();
 
                 ShowQuestionClientRpc();
+            }
+
+            if (IsOwner && IsClient)
+            {
+                ShowQuestionHostServerRpc();
             }
         }
 
@@ -38,6 +43,20 @@ namespace BOYAREngine.Game
 
             GetComponent<Button>().interactable = false;
             GetComponentInChildren<Text>().text = null;
+        }
+
+        [ServerRpc]
+        private void ShowQuestionHostServerRpc()
+        {
+            QuestionManager.Instance.ShowQuestionHost(ThemeIndex, QuestionIndex);
+
+            GameManager.Instance.ThemeIndexCurrent = ThemeIndex;
+            GameManager.Instance.QuestionIndexCurrent = QuestionIndex;
+
+            GetComponent<Button>().interactable = false;
+            GetComponentInChildren<Text>().text = null;
+
+            ShowQuestionClientRpc();
         }
     }
 

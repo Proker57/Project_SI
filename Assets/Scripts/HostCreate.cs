@@ -17,9 +17,14 @@ namespace BOYAREngine.Game
         [SerializeField] private GameObject _themePrefab;
         [SerializeField] private NetworkObject _questionPrefab;
 
+        [Header("Host menu")]
+        [SerializeField] private GameObject _hostMenuGameObject;
+
         [Header("Player setup")]
         [SerializeField] private GameObject _playerPrefab;
+        [SerializeField] private GameObject _hostPrefab;
         [SerializeField] private Transform _playerSpawnParent;
+        [SerializeField] private Transform _hostSpawnParent;
 
         // Sas
         [Header("Lists of round data")]
@@ -32,7 +37,11 @@ namespace BOYAREngine.Game
         {
             NetworkManager.Singleton.StartHost();
 
+            _hostMenuGameObject.SetActive(true);
+
             SetupHostRound();
+
+            SpawnHost(NetworkManager.Singleton.ServerClientId);
 
             SetGameStarted(true);
         }
@@ -69,6 +78,7 @@ namespace BOYAREngine.Game
                         // Spawn Question Object on server
                         var question = Instantiate(_questionPrefab, theme.transform);
                         question.GetComponent<NetworkObject>().Spawn();
+                        GameManager.Instance.QuestionButtonsList.Add(question);
                         // Add Question Price the the game data list
                         GameManager.Instance.NetQuestionPrice.Add(new Vector2(i, j), GameManager.Instance.Rounds[round].Themes[i].Questions[j].Price);
                         // Set price to the object
@@ -87,15 +97,20 @@ namespace BOYAREngine.Game
             if (IsHost)
             {
                 SpawnPlayer(id);
+                StartCoroutine(FindHost());
             }
 
-            if (NetworkManager.Singleton.LocalClientId == id)
+            if (!IsHost)
             {
-                FindThemes();
-                StartCoroutine(FindQuestions());
-                StartCoroutine(FindPlayers());
+                if (NetworkManager.Singleton.LocalClientId == id)
+                {
+                    FindThemes();
+                    StartCoroutine(FindQuestions());
+                    StartCoroutine(FindPlayers());
+                    StartCoroutine(FindHost());
 
-                SetGameStarted(true);
+                    SetGameStarted(true);
+                }
             }
         }
 
@@ -132,12 +147,23 @@ namespace BOYAREngine.Game
             yield return new WaitForSeconds(.5f);
 
             var players = GameObject.FindGameObjectsWithTag("Player");
-            foreach (var player in players)
+            for (var i = 0; i < players.Length; i++)
             {
-                player.transform.SetParent(_playerSpawnParent);
-                player.GetComponent<PlayerData>().Name.Value = GameManager.Instance.Name;
-                player.GetComponent<PlayerData>().Points.Value = GameManager.Instance.Points;
+                if (players[i].GetComponent<PlayerData>().Id == NetworkManager.Singleton.LocalClientId)
+                {
+                    players[i].GetComponent<PlayerData>().Name.Value = GameManager.Instance.Name;
+                }
+
+                players[i].transform.SetParent(_playerSpawnParent);
             }
+        }
+
+        private IEnumerator FindHost()
+        {
+            yield return new WaitForSeconds(.5f);
+
+            var host = GameObject.FindGameObjectWithTag("Host");
+            host.transform.SetParent(_hostSpawnParent);
         }
 
         private void SetGameStarted(bool isGameStarted)
@@ -150,6 +176,15 @@ namespace BOYAREngine.Game
         {
             var go = Instantiate(_playerPrefab, _playerSpawnParent);
             go.gameObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(id);
+
+            GameManager.Instance.Players.Add(go);
+        }
+
+        private void SpawnHost(ulong id)
+        {
+            var go = Instantiate(_hostPrefab, _hostSpawnParent);
+            go.gameObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(id);
+            go.gameObject.GetComponent<HostData>().Name.Value = GameManager.Instance.Name;
         }
 
         private void OnEnable()

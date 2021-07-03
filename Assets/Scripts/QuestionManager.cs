@@ -31,6 +31,7 @@ namespace BOYAREngine.Game
 
         [Header("Answer")]
         [SerializeField] private Text _answer;
+        [SerializeField] private Image _answerImage;
         [SerializeField] private float _answerTimer;
         [SerializeField] private float _backToThemeTimer;
 
@@ -58,12 +59,15 @@ namespace BOYAREngine.Game
             }
         }
 
+        // QUESTION HOST
         public void ShowQuestionHost(int themeIndex, int questionIndex)
         {
             _themePanel.SetActive(false);
             _questionPanel.SetActive(true);
             _answerPanel.SetActive(false);
             _answerDecideHostPanel.SetActive(true);
+            _netIsAudio.Value = false;
+            _netIsImage.Value = false;
 
             AudioSource.gameObject.SetActive(false);
             _image.gameObject.SetActive(false);
@@ -72,7 +76,10 @@ namespace BOYAREngine.Game
             AudioSource.clip = null;
             _image.sprite = null;
 
+
             var round = GameManager.Instance.Round;
+            GameManager.Instance.QuestionPrice = int.Parse(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Price);
+
             if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Scenario != null )
             {
                 _scenario.text = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Scenario;
@@ -121,7 +128,8 @@ namespace BOYAREngine.Game
 
                 var tex = new Texture2D(2, 2);
                 tex.LoadImage(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageData);
-                _image.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
+                //_image.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
+                _answerImage.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
             }
 
             Invoke(nameof(AnswerCountdown), _answerTimer);
@@ -179,11 +187,13 @@ namespace BOYAREngine.Game
             }
         }
 
+        // ANSWER HOST
         public void ShowAnswerHost(int themeIndex, int questionIndex)
         {
             _themePanel.SetActive(false);
             _questionPanel.SetActive(false);
             _answerPanel.SetActive(true);
+            _answerImage.gameObject.SetActive(_netIsImage.Value);
 
             var round = GameManager.Instance.Round;
             _answer.text = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Answers[0];
@@ -192,7 +202,7 @@ namespace BOYAREngine.Game
             // Client
             ShowAnswerClientRpc();
 
-            Invoke(nameof(BackToThemeCountdown), _backToThemeTimer);
+            //Invoke(nameof(BackToThemeCountdown), _backToThemeTimer);
         }
 
         [ClientRpc]
@@ -220,7 +230,7 @@ namespace BOYAREngine.Game
             ShowAnswerHost(GameManager.Instance.ThemeIndexCurrent, GameManager.Instance.QuestionIndexCurrent);
         }
 
-        private void BackToThemeCountdown()
+        public void BackToThemeCountdown()
         {
             _themePanel.SetActive(true);
             _questionPanel.SetActive(false);
@@ -230,11 +240,13 @@ namespace BOYAREngine.Game
         }
 
         [ClientRpc]
-        private void BackToThemeClientRpc()
+        public void BackToThemeClientRpc()
         {
             _themePanel.SetActive(true);
             _questionPanel.SetActive(false);
             _answerPanel.SetActive(false);
+
+            _answerImage.gameObject.SetActive(_netIsImage.Value);
         }
 
 

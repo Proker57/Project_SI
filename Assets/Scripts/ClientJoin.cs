@@ -16,8 +16,6 @@ namespace BOYAREngine.Net
         public void OnClient()
         {
             NetworkManager.Singleton.StartClient();
-
-            GameManager.Instance.PlayersList.Add(NetworkManager.Singleton.LocalClientId);
         }
     }
 }

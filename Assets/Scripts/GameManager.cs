@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using MLAPI;
 using MLAPI.NetworkVariable;
 using MLAPI.NetworkVariable.Collections;
@@ -14,6 +15,7 @@ public class GameManager : NetworkBehaviour
 
     [Header("Logic")]
     public List<Round> Rounds;
+    public int ActivePlayer = 0;
 
     public int ThemeIndexCurrent;
     public int QuestionIndexCurrent;
@@ -31,8 +33,11 @@ public class GameManager : NetworkBehaviour
     public float Volume;
     public bool IsReadyToStart;
 
+    [Header("Host Data")]
+    public List<NetworkObject> QuestionButtonsList = new List<NetworkObject>();
+
     [Header("Player Data")]
-    public NetworkList<ulong> PlayersList = new NetworkList<ulong>(new NetworkVariableSettings{ ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.Everyone});
+    public List<GameObject> Players = new List<GameObject>();
     public string Name;
     public int Points;
 
@@ -41,6 +46,8 @@ public class GameManager : NetworkBehaviour
     public NetworkDictionary<Vector2, string> NetQuestionPrice = new NetworkDictionary<Vector2, string>();
     public NetworkVariable<byte> NetQuestionRowCount = new NetworkVariable<byte>();
     public NetworkVariable<byte> NetQuestionColumnCount = new NetworkVariable<byte>();
+
+    public int QuestionPrice;
 
     //
     public Text DebugText;
@@ -125,6 +132,14 @@ public class GameManager : NetworkBehaviour
         if (input.text != null)
         {
             Name = input.text;
+        }
+    }
+
+    public void ChangeActivePlayer(int index)
+    {
+        foreach (var button in QuestionButtonsList)
+        {
+            button.ChangeOwnership(Players[index].GetComponent<NetworkObject>().OwnerClientId);
         }
     }
 }
