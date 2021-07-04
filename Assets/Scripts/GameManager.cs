@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using MLAPI;
+using MLAPI.Messaging;
 using MLAPI.NetworkVariable;
 using MLAPI.NetworkVariable.Collections;
+using MLAPI.Transports.UNET;
 using Parse;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,6 +13,9 @@ using UnityEngine.UI;
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance;
+
+    [Header("Network")]
+    [SerializeField] private UNetTransport _uNet;
 
     [Header("Logic")]
     public List<Round> Rounds;
@@ -26,6 +30,7 @@ public class GameManager : NetworkBehaviour
     public List<string> PackageFileNames;
     public Dropdown Dropdown;
     public InputField InputName;
+    public InputField InputIp;
 
     [Header("Vars")]
     public string PackagePath;
@@ -44,8 +49,8 @@ public class GameManager : NetworkBehaviour
     [Header("Game Data")]
     public NetworkList<string> NetThemeNames = new NetworkList<string>();
     public NetworkDictionary<Vector2, string> NetQuestionPrice = new NetworkDictionary<Vector2, string>();
-    public NetworkVariable<byte> NetQuestionRowCount = new NetworkVariable<byte>();
-    public NetworkVariable<byte> NetQuestionColumnCount = new NetworkVariable<byte>();
+    [HideInInspector] public NetworkVariable<byte> NetQuestionRowCount = new NetworkVariable<byte>();
+    [HideInInspector] public NetworkVariable<byte> NetQuestionColumnCount = new NetworkVariable<byte>();
 
     public int QuestionPrice;
 
@@ -86,6 +91,11 @@ public class GameManager : NetworkBehaviour
         InputName.onValueChanged.AddListener(delegate
         {
             InputField_OnNameChanged(InputName);
+        });
+
+        InputIp.onValueChanged.AddListener(delegate
+        {
+            InputField_OnIpChanged(InputName);
         });
     }
 
@@ -135,11 +145,39 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    public void InputField_OnIpChanged(InputField input)
+    {
+        _uNet.ConnectAddress = input.text;
+    }
+
     public void ChangeActivePlayer(int index)
     {
         foreach (var button in QuestionButtonsList)
         {
             button.ChangeOwnership(Players[index].GetComponent<NetworkObject>().OwnerClientId);
+        }
+
+        ActivePlayerChangeColorClientRpc(index);
+
+        Debug.Log("Active Player Changed");
+    }
+
+    [ClientRpc]
+    private void ActivePlayerChangeColorClientRpc(int index)
+    {
+        ResetColorsClientRpc();
+
+        // 191 121 164 Pink
+        Players[index].GetComponent<Image>().color = new Color32(191, 121, 164, 255);
+    }
+
+    [ClientRpc]
+    public void ResetColorsClientRpc()
+    {
+        foreach (var player in Players)
+        {
+            // 69 121 164  Blue
+            player.GetComponent<Image>().color = new Color32(64, 121, 164, 255);
         }
     }
 }

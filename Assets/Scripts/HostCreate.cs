@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using BOYAREngine.Net;
 using UnityEngine;
 using UnityEngine.UI;
@@ -156,6 +157,8 @@ namespace BOYAREngine.Game
 
                 players[i].transform.SetParent(_playerSpawnParent);
             }
+
+            GameManager.Instance.Players = players.ToList();
         }
 
         private IEnumerator FindHost()
@@ -176,6 +179,7 @@ namespace BOYAREngine.Game
         {
             var go = Instantiate(_playerPrefab, _playerSpawnParent);
             go.gameObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(id);
+            go.gameObject.GetComponent<PlayerData>().Id = id;
 
             GameManager.Instance.Players.Add(go);
         }

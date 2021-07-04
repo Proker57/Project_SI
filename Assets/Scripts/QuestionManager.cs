@@ -21,8 +21,10 @@ namespace BOYAREngine.Game
         [SerializeField] private GameObject _answerPanel;
         [SerializeField] private GameObject _answerDecideHostPanel;
 
+        [Header("Local Objects")]
+        public GameObject AnswerButtonGameObject;
+
         [Header("Content")]
-        //public GameObject AudioGameObject;
         public AudioSource AudioSource;
         [SerializeField] private Image _image;
 
@@ -76,6 +78,7 @@ namespace BOYAREngine.Game
             AudioSource.clip = null;
             _image.sprite = null;
 
+            GameManager.Instance.ResetColorsClientRpc();
 
             var round = GameManager.Instance.Round;
             GameManager.Instance.QuestionPrice = int.Parse(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Price);
@@ -140,6 +143,9 @@ namespace BOYAREngine.Game
             _themePanel.SetActive(false);
             _questionPanel.SetActive(true);
             _answerPanel.SetActive(false);
+
+            if (!IsHost)
+                AnswerButtonGameObject.SetActive(true);
 
             _scenario.text = null;
 
@@ -211,6 +217,8 @@ namespace BOYAREngine.Game
             _themePanel.SetActive(false);
             _questionPanel.SetActive(false);
             _answerPanel.SetActive(true);
+
+            AnswerButtonGameObject.SetActive(false);
 
             _answer.text = null;
 
