@@ -103,15 +103,19 @@ namespace BOYAREngine.Game
 
             if (!IsHost)
             {
-                if (NetworkManager.Singleton.LocalClientId == id)
-                {
-                    FindThemes();
-                    StartCoroutine(FindQuestions());
-                    StartCoroutine(FindPlayers());
-                    StartCoroutine(FindHost());
+                FindThemes();
+                StartCoroutine(FindQuestions());
+                StartCoroutine(FindPlayers());
+                StartCoroutine(FindHost());
 
-                    SetGameStarted(true);
-                }
+                Debug.Log("New connection");
+
+                SetGameStarted(true);
+
+//                if (NetworkManager.Singleton.LocalClientId == id)
+//                {
+//                    
+//                }
             }
         }
 
@@ -145,20 +149,20 @@ namespace BOYAREngine.Game
 
         private IEnumerator FindPlayers()
         {
-            yield return new WaitForSeconds(.5f);
+            yield return new WaitForSeconds(1f);
 
             var players = GameObject.FindGameObjectsWithTag("Player");
             for (var i = 0; i < players.Length; i++)
             {
-                if (players[i].GetComponent<PlayerData>().Id == NetworkManager.Singleton.LocalClientId)
-                {
-                    players[i].GetComponent<PlayerData>().Name.Value = GameManager.Instance.Name;
-                }
+                players[i].GetComponent<PlayerData>().Name.Value = GameManager.Instance.Name;
 
                 players[i].transform.SetParent(_playerSpawnParent);
+
+                GameManager.Instance.Players.Add(players[i]);
+
             }
 
-            GameManager.Instance.Players = players.ToList();
+            //GameManager.Instance.Players = players.ToList();
         }
 
         private IEnumerator FindHost()
