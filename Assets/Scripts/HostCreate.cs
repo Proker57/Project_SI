@@ -1,9 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using BOYAREngine.Net;
 using UnityEngine;
 using UnityEngine.UI;
 using MLAPI;
+using MLAPI.Messaging;
 
 namespace BOYAREngine.Game
 {
@@ -97,26 +99,33 @@ namespace BOYAREngine.Game
         {
             if (IsHost)
             {
-                SpawnPlayer(id);
                 StartCoroutine(FindHost());
             }
 
-            if (!IsHost)
+            if (NetworkManager.Singleton.LocalClientId == id)
             {
-                FindThemes();
-                StartCoroutine(FindQuestions());
-                StartCoroutine(FindPlayers());
-                StartCoroutine(FindHost());
-
-                Debug.Log("New connection");
-
-                SetGameStarted(true);
-
-//                if (NetworkManager.Singleton.LocalClientId == id)
-//                {
-//                    
-//                }
+                OnNewClientConnectionServerRpc(id);
             }
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void OnNewClientConnectionServerRpc(ulong id)
+        {
+            SpawnPlayer(id);
+            OnNewClientConnectionClientRpc();
+        }
+
+        [ClientRpc]
+        private void OnNewClientConnectionClientRpc()
+        {
+            FindThemes();
+            StartCoroutine(FindQuestions());
+            StartCoroutine(FindPlayers());
+            StartCoroutine(FindHost());
+
+            Debug.Log("New connection");
+
+            SetGameStarted(true);
         }
 
         private void FindThemes()
@@ -152,6 +161,8 @@ namespace BOYAREngine.Game
             yield return new WaitForSeconds(1f);
 
             var players = GameObject.FindGameObjectsWithTag("Player");
+            GameManager.Instance.Players = new List<GameObject>();
+
             for (var i = 0; i < players.Length; i++)
             {
                 players[i].GetComponent<PlayerData>().Name.Value = GameManager.Instance.Name;

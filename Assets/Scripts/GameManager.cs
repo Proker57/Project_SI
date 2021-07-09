@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using BOYAREngine.Game;
 using MLAPI;
 using MLAPI.Messaging;
 using MLAPI.NetworkVariable;
@@ -71,9 +72,9 @@ public class GameManager : NetworkBehaviour
 
     private void Start()
     {
-        PackagePath = Path.Combine("/!Source", "DELETE");
+        //PackagePath = Path.Combine("/!Source", "DELETE");
 
-        //PackagePath = "/storage/emulated/0/Android/media/com.BOYAREGames.SiGameMobile";
+        PackagePath = "/storage/emulated/0/Android/media/com.BOYAREGames.SiGameMobile";
 
         LoadPackageNames();
 
@@ -157,9 +158,16 @@ public class GameManager : NetworkBehaviour
             button.ChangeOwnership(Players[index].GetComponent<NetworkObject>().OwnerClientId);
         }
 
-        ActivePlayerChangeColorClientRpc(index);
+        //ActivePlayerChangeColorClientRpc(index);
+        ChangeColorServerRpc(index);
 
         Debug.Log("Active Player Changed");
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void ChangeColorServerRpc(int index)
+    {
+        ActivePlayerChangeColorClientRpc(index);
     }
 
     [ClientRpc]
@@ -169,6 +177,8 @@ public class GameManager : NetworkBehaviour
 
         // 191 121 164 Pink
         Players[index].GetComponent<Image>().color = new Color32(191, 121, 164, 255);
+
+        Debug.Log("Pink COlor");
     }
 
     [ClientRpc]
@@ -179,5 +189,7 @@ public class GameManager : NetworkBehaviour
             // 69 121 164  Blue
             player.GetComponent<Image>().color = new Color32(64, 121, 164, 255);
         }
+
+        Debug.Log("Reset color");
     }
 }

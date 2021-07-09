@@ -9,6 +9,7 @@ namespace BOYAREngine.Game
     {
         public NetworkVariable<string> Name = new NetworkVariable<string>(new NetworkVariableSettings {ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.OwnerOnly});
         public NetworkVariable<int> Points = new NetworkVariable<int>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.OwnerOnly });
+        public NetworkVariable<Color32> Color = new NetworkVariable<Color32>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.Everyone });
         [Space]
         public ulong Id;
         [SerializeField] private Text _nameText;
@@ -18,6 +19,9 @@ namespace BOYAREngine.Game
         {
             Name.OnValueChanged += ChangeName;
             Points.OnValueChanged += ChangePoints;
+            Color.OnValueChanged += ChangeColor;
+
+            Color.Value = new Color32(64, 121, 164, 255);
 
             Id = NetworkManager.Singleton.LocalClientId;
         }
@@ -32,6 +36,12 @@ namespace BOYAREngine.Game
         {
             Points.Value = newVar;
             _pointsText.text = Points.Value.ToString();
+        }
+
+        private void ChangeColor(Color32 oldVar, Color32 newVar)
+        {
+            Color.Value = newVar;
+            GetComponent<Image>().color = newVar;
         }
     }
 }

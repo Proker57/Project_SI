@@ -14,6 +14,8 @@ namespace BOYAREngine.Game
         [ServerRpc]
         private void ChangeActivePlayerServerRpc()
         {
+            DisableAnswerButton();
+
             var clientIndex = 0;
             for (var i = 0; i < GameManager.Instance.Players.Count; i++)
             {
@@ -24,8 +26,6 @@ namespace BOYAREngine.Game
             }
 
             GameManager.Instance.ChangeActivePlayer(clientIndex);
-
-            DisableAnswerButton();
         }
 
         [ClientRpc]

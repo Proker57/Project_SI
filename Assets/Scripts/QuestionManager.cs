@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -42,8 +43,8 @@ namespace BOYAREngine.Game
         private NetworkVariable<string> _netAnswer = new NetworkVariable<string>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.ServerOnly });
 
         // Audio
-        private byte[] _audioData;
-        private byte[] _newData;
+        //private byte[] _audioData;
+        //private byte[] _newData;
 
         private NetworkVariable<bool> _netIsAudio = new NetworkVariable<bool>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.ServerOnly });
         private NetworkVariable<bool> _netIsImage = new NetworkVariable<bool>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.ServerOnly });
@@ -135,6 +136,7 @@ namespace BOYAREngine.Game
                 _answerImage.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
             }
 
+            StartCoroutine("AnswerCountdown");
             Invoke(nameof(AnswerCountdown), _answerTimer);
         }
 
@@ -207,8 +209,6 @@ namespace BOYAREngine.Game
 
             // Client
             ShowAnswerClientRpc();
-
-            //Invoke(nameof(BackToThemeCountdown), _backToThemeTimer);
         }
 
         [ClientRpc]
@@ -233,18 +233,11 @@ namespace BOYAREngine.Game
             _answer.text = _netAnswer.Value;
         }
 
-        private void AnswerCountdown()
+        private IEnumerable AnswerCountdown()
         {
+            yield return new WaitForSeconds(_answerTimer);
+
             ShowAnswerHost(GameManager.Instance.ThemeIndexCurrent, GameManager.Instance.QuestionIndexCurrent);
-        }
-
-        public void BackToThemeCountdown()
-        {
-            _themePanel.SetActive(true);
-            _questionPanel.SetActive(false);
-            _answerPanel.SetActive(false);
-
-            BackToThemeClientRpc();
         }
 
         [ClientRpc]
@@ -255,6 +248,8 @@ namespace BOYAREngine.Game
             _answerPanel.SetActive(false);
 
             _answerImage.gameObject.SetActive(_netIsImage.Value);
+
+            StopAllCoroutines();
         }
 
 
