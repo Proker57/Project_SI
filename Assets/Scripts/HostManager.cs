@@ -60,7 +60,7 @@ namespace BOYAREngine.Game
 
         private IEnumerator RenameAndReplacePlayer(ulong id)
         {
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(.5f);
 
             var goList = GameObject.FindGameObjectsWithTag("Player");
             for (var i = 0; i < goList.Length; i++)
@@ -90,23 +90,23 @@ namespace BOYAREngine.Game
         private IEnumerator AddPlayersToList()
         {
             GameManager.Instance.Players = new List<GameObject>();
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(.5f);
             GameManager.Instance.Players = GameObject.FindGameObjectsWithTag("Player").ToList();
         }
 
         [ClientRpc]
         private void ReplaceNewPlayerClientRpc()
         {
-            StartCoroutine(ReplaceNewPlayer());
+            StartCoroutine(SetParentToNewPlayer());
         }
 
-        private IEnumerator ReplaceNewPlayer()
+        private IEnumerator SetParentToNewPlayer()
         {
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(.5f);
             var goList = GameObject.FindGameObjectsWithTag("Player");
             foreach (var player in goList)
             {
-                player.transform.SetParent(_playerSpawnParent);
+                player.transform.SetParent(_playerSpawnParent, false);
             }
         }
     }

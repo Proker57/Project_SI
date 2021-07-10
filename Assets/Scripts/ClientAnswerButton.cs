@@ -4,32 +4,33 @@ using UnityEngine;
 
 namespace BOYAREngine.Game
 {
-    public class ClientAnswerButton : MonoBehaviour
+    public class ClientAnswerButton : NetworkBehaviour
     {
         public void OnClick()
         {
-            ChangeActivePlayerServerRpc();
+            ChangeActivePlayerServerRpc(NetworkManager.Singleton.LocalClientId);
         }
 
-        [ServerRpc]
-        private void ChangeActivePlayerServerRpc()
+        [ServerRpc(RequireOwnership = false)]
+        private void ChangeActivePlayerServerRpc(ulong id)
         {
-            DisableAnswerButton();
+            DisableAnswerButtonClientRpc();
 
-            var clientIndex = 0;
+            //var clientIndex = 0;
             for (var i = 0; i < GameManager.Instance.Players.Count; i++)
             {
-                if (GameManager.Instance.Players[i].GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
+                if (GameManager.Instance.Players[i].GetComponent<NetworkObject>().OwnerClientId == id)
                 {
-                    clientIndex = i;
+                    //clientIndex = i;
+                    GameManager.Instance.ChangeActivePlayer(i);
                 }
             }
 
-            GameManager.Instance.ChangeActivePlayer(clientIndex);
+            //GameManager.Instance.ChangeActivePlayer(clientIndex);
         }
 
         [ClientRpc]
-        private void DisableAnswerButton()
+        private void DisableAnswerButtonClientRpc()
         {
             QuestionManager.Instance.AnswerButtonGameObject.SetActive(false);
             Debug.Log("Disable Answer Button for All Clients");

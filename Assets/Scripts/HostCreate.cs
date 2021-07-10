@@ -58,7 +58,6 @@ namespace BOYAREngine.Game
                 SetGameStarted(true);
 
                 // Parse Package from folder
-                //Parse.Instance.ParsePackage();
                 GameManager.Instance.ParsePackage();
                 var round = GameManager.Instance.Round;
 
@@ -95,44 +94,6 @@ namespace BOYAREngine.Game
             }
         }
 
-        private void OnClientJoins(ulong id)
-        {
-            if (IsHost)
-            {
-                StartCoroutine(FindHost());
-            }
-
-            if (NetworkManager.Singleton.LocalClientId == id)
-            {
-                //OnNewClientConnectionServerRpc(id);
-            }
-
-//            if (IsServer)
-//            {
-//                OnNewClientConnectionServerRpc(id);
-//            }
-        }
-
-        [ServerRpc(RequireOwnership = false)]
-        private void OnNewClientConnectionServerRpc(ulong id)
-        {
-            SpawnPlayer(id);
-            OnNewClientConnectionClientRpc();
-        }
-
-        [ClientRpc]
-        private void OnNewClientConnectionClientRpc()
-        {
-            FindThemes();
-            StartCoroutine(FindQuestions());
-            StartCoroutine(FindPlayers());
-            StartCoroutine(FindHost());
-
-            Debug.Log("New connection");
-
-            SetGameStarted(true);
-        }
-
         public void FindThemes()
         {
             var themes = GameObject.FindGameObjectsWithTag("Theme");
@@ -161,47 +122,10 @@ namespace BOYAREngine.Game
             }
         }
 
-        private IEnumerator FindPlayers()
-        {
-            yield return new WaitForSeconds(1f);
-
-            var players = GameObject.FindGameObjectsWithTag("Player");
-            GameManager.Instance.Players = new List<GameObject>();
-
-            for (var i = 0; i < players.Length; i++)
-            {
-                players[i].GetComponent<PlayerData>().Name.Value = GameManager.Instance.Name;
-
-                players[i].transform.SetParent(_playerSpawnParent);
-
-                GameManager.Instance.Players.Add(players[i]);
-
-            }
-
-            //GameManager.Instance.Players = players.ToList();
-        }
-
-        public IEnumerator FindHost()
-        {
-            yield return new WaitForSeconds(.5f);
-
-            var host = GameObject.FindGameObjectWithTag("Host");
-            host.transform.SetParent(_hostSpawnParent);
-        }
-
         public void SetGameStarted(bool isGameStarted)
         {
             _mainStateGameObject.SetActive(!isGameStarted);
             _gameStateGameObject.SetActive(isGameStarted);
-        }
-
-        private void SpawnPlayer(ulong id)
-        {
-            var go = Instantiate(_playerPrefab, _playerSpawnParent);
-            go.gameObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(id);
-            //go.gameObject.GetComponent<PlayerData>().Id = id;
-
-            GameManager.Instance.Players.Add(go);
         }
 
         private void SpawnHost(ulong id)
@@ -209,16 +133,6 @@ namespace BOYAREngine.Game
             var go = Instantiate(_hostPrefab, _hostSpawnParent);
             go.gameObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(id);
             go.gameObject.GetComponent<HostData>().Name.Value = GameManager.Instance.Name;
-        }
-
-        private void OnEnable()
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientJoins;
-        }
-
-        private void OnDisable()
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientJoins;
         }
     }
 }

@@ -3699,6 +3699,7 @@ GameObject:
   - component: {fileID: 1194415763}
   - component: {fileID: 1194415762}
   - component: {fileID: 1194415760}
+  - component: {fileID: 1194415761}
   m_Layer: 5
   m_Name: Answer Button
   m_TagString: Untagged
@@ -3737,6 +3738,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b19f03e8c388c88449fbff5d39905060, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1194415761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194415758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  NetworkInstanceId: 0
+  PrefabHash: 15479726176619757473
+  PrefabHashGenerator: Answer Button
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
 --- !u!114 &1194415762
 MonoBehaviour:
   m_ObjectHideFlags: 0
