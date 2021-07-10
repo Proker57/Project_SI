@@ -19,7 +19,7 @@ namespace BOYAREngine.Game
             var clientIndex = 0;
             for (var i = 0; i < GameManager.Instance.Players.Count; i++)
             {
-                if (GameManager.Instance.Players[i].GetComponent<PlayerData>().Id == NetworkManager.Singleton.LocalClientId)
+                if (GameManager.Instance.Players[i].GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId)
                 {
                     clientIndex = i;
                 }

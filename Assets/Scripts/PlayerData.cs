@@ -11,7 +11,7 @@ namespace BOYAREngine.Game
         public NetworkVariable<int> Points = new NetworkVariable<int>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.OwnerOnly });
         public NetworkVariable<Color32> Color = new NetworkVariable<Color32>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.Everyone });
         [Space]
-        public ulong Id;
+        //public ulong Id;
         [SerializeField] private Text _nameText;
         [SerializeField] private Text _pointsText;
 
@@ -23,7 +23,7 @@ namespace BOYAREngine.Game
 
             Color.Value = new Color32(64, 121, 164, 255);
 
-            Id = NetworkManager.Singleton.LocalClientId;
+            //Id = NetworkManager.Singleton.LocalClientId;
         }
 
         private void ChangeName(string oldName, string newName)

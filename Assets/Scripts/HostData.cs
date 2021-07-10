@@ -15,8 +15,6 @@ namespace BOYAREngine.Game
         private void Awake()
         {
             Name.OnValueChanged += ChangeName;
-
-            Id = NetworkManager.Singleton.LocalClientId;
         }
 
         private void ChangeName(string oldName, string newName)

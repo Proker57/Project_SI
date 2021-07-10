@@ -104,8 +104,13 @@ namespace BOYAREngine.Game
 
             if (NetworkManager.Singleton.LocalClientId == id)
             {
-                OnNewClientConnectionServerRpc(id);
+                //OnNewClientConnectionServerRpc(id);
             }
+
+//            if (IsServer)
+//            {
+//                OnNewClientConnectionServerRpc(id);
+//            }
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -128,7 +133,7 @@ namespace BOYAREngine.Game
             SetGameStarted(true);
         }
 
-        private void FindThemes()
+        public void FindThemes()
         {
             var themes = GameObject.FindGameObjectsWithTag("Theme");
             for (var i = 0; i < themes.Length; i++)
@@ -140,7 +145,7 @@ namespace BOYAREngine.Game
             }
         }
 
-        private IEnumerator FindQuestions()
+        public IEnumerator FindQuestions()
         {
             yield return new WaitForSeconds(.2f);
 
@@ -176,7 +181,7 @@ namespace BOYAREngine.Game
             //GameManager.Instance.Players = players.ToList();
         }
 
-        private IEnumerator FindHost()
+        public IEnumerator FindHost()
         {
             yield return new WaitForSeconds(.5f);
 
@@ -184,7 +189,7 @@ namespace BOYAREngine.Game
             host.transform.SetParent(_hostSpawnParent);
         }
 
-        private void SetGameStarted(bool isGameStarted)
+        public void SetGameStarted(bool isGameStarted)
         {
             _mainStateGameObject.SetActive(!isGameStarted);
             _gameStateGameObject.SetActive(isGameStarted);
@@ -194,7 +199,7 @@ namespace BOYAREngine.Game
         {
             var go = Instantiate(_playerPrefab, _playerSpawnParent);
             go.gameObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(id);
-            go.gameObject.GetComponent<PlayerData>().Id = id;
+            //go.gameObject.GetComponent<PlayerData>().Id = id;
 
             GameManager.Instance.Players.Add(go);
         }
