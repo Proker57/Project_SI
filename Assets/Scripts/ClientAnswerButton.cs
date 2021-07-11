@@ -8,7 +8,7 @@ namespace BOYAREngine.Game
     {
         public void OnClick()
         {
-            ChangeActivePlayerServerRpc(NetworkManager.Singleton.LocalClientId);
+            ChangeActivePlayerServerRpc(OwnerClientId);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -16,17 +16,13 @@ namespace BOYAREngine.Game
         {
             DisableAnswerButtonClientRpc();
 
-            //var clientIndex = 0;
             for (var i = 0; i < GameManager.Instance.Players.Count; i++)
             {
                 if (GameManager.Instance.Players[i].GetComponent<NetworkObject>().OwnerClientId == id)
                 {
-                    //clientIndex = i;
                     GameManager.Instance.ChangeActivePlayer(i);
                 }
             }
-
-            //GameManager.Instance.ChangeActivePlayer(clientIndex);
         }
 
         [ClientRpc]
