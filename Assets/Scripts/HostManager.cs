@@ -9,6 +9,10 @@ namespace BOYAREngine.Game
 {
     public class HostManager : NetworkBehaviour
     {
+        public static HostManager Instance;
+
+        public HostMessages Messages;
+
         [Header("Links")]
         [SerializeField] private HostCreate _hostCreate;
 
@@ -16,6 +20,23 @@ namespace BOYAREngine.Game
         [SerializeField] private GameObject _playerPrefab;
         [SerializeField] private Transform _playerSpawnParent;
         [SerializeField] private Transform _hostSpawnParent;
+
+        private void Awake()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        private void Start()
+        {
+            Messages = GetComponent<HostMessages>();
+        }
 
         private void OnEnable()
         {
@@ -37,17 +58,17 @@ namespace BOYAREngine.Game
 
             if (NetworkManager.Singleton.LocalClientId == id)
             {
-                _hostCreate.FindThemes();
-                StartCoroutine(_hostCreate.FindQuestions());
+                _hostCreate.SetThemeName();
+                StartCoroutine(_hostCreate.SetQuestionPrice());
+                StartCoroutine(RenamePlayer(id));
 
-                StartCoroutine(FindHost());
-                StartCoroutine(RenameAndReplacePlayer(id));
+                GameManager.Instance.NetId = id;
 
                 _hostCreate.SetGameStarted(true);
             }
 
-            AddPlayersToListClientRpc();
-            ReplaceNewPlayerClientRpc();
+            //AddPlayersToListClientRpc();
+            //ReplaceNewPlayerClientRpc();
         }
 
         private void SpawnClientPlayer(ulong id)
@@ -55,12 +76,12 @@ namespace BOYAREngine.Game
             var go = Instantiate(_playerPrefab, _playerSpawnParent);
             go.gameObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(id);
 
-            GameManager.Instance.Players.Add(go);
+            //GameManager.Instance.Players.Add(go);
         }
 
-        private IEnumerator RenameAndReplacePlayer(ulong id)
+        private IEnumerator RenamePlayer(ulong id)
         {
-            yield return new WaitForSeconds(.5f);
+            yield return new WaitForSeconds(.2f);
 
             var goList = GameObject.FindGameObjectsWithTag("Player");
             for (var i = 0; i < goList.Length; i++)
@@ -68,14 +89,13 @@ namespace BOYAREngine.Game
                 if (goList[i].GetComponent<NetworkObject>().OwnerClientId == id)
                 {
                     goList[i].GetComponent<PlayerData>().Name.Value = GameManager.Instance.Name;
-                    goList[i].transform.SetParent(_playerSpawnParent);
                 }
             }
         }
 
-        public IEnumerator FindHost()
+        /*public IEnumerator FindHost()
         {
-            yield return new WaitForSeconds(.5f);
+            yield return new WaitForSeconds(.2f);
 
             var host = GameObject.FindGameObjectWithTag("Host");
             host.transform.SetParent(_hostSpawnParent);
@@ -90,7 +110,7 @@ namespace BOYAREngine.Game
         private IEnumerator AddPlayersToList()
         {
             GameManager.Instance.Players = new List<GameObject>();
-            yield return new WaitForSeconds(.5f);
+            yield return new WaitForSeconds(.2f);
             GameManager.Instance.Players = GameObject.FindGameObjectsWithTag("Player").ToList();
         }
 
@@ -102,13 +122,13 @@ namespace BOYAREngine.Game
 
         private IEnumerator SetParentToNewPlayer()
         {
-            yield return new WaitForSeconds(.5f);
+            yield return new WaitForSeconds(.2f);
             var goList = GameObject.FindGameObjectsWithTag("Player");
             foreach (var player in goList)
             {
                 player.transform.SetParent(_playerSpawnParent, false);
             }
-        }
+        }*/
     }
 }
 

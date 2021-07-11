@@ -9,6 +9,7 @@ TagManager:
   - Question
   - ThemeParent
   - Host
+  - HostParent
   layers:
   - Default
   - TransparentFX

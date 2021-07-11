@@ -22,8 +22,12 @@ namespace BOYAREngine.Game
             Color.OnValueChanged += ChangeColor;
 
             Color.Value = new Color32(64, 121, 164, 255);
+        }
 
-            //Id = NetworkManager.Singleton.LocalClientId;
+        private void Start()
+        {
+            gameObject.transform.SetParent(GameObject.FindGameObjectWithTag("PlayerParent").transform, false);
+            GameManager.Instance.Players.Add(gameObject);
         }
 
         private void ChangeName(string oldName, string newName)

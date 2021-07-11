@@ -1,11 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using BOYAREngine.Net;
 using UnityEngine;
 using UnityEngine.UI;
 using MLAPI;
-using MLAPI.Messaging;
 
 namespace BOYAREngine.Game
 {
@@ -24,15 +21,8 @@ namespace BOYAREngine.Game
         [SerializeField] private GameObject _hostMenuGameObject;
 
         [Header("Player setup")]
-        [SerializeField] private GameObject _playerPrefab;
         [SerializeField] private GameObject _hostPrefab;
-        [SerializeField] private Transform _playerSpawnParent;
         [SerializeField] private Transform _hostSpawnParent;
-
-        // Sas
-        [Header("Lists of round data")]
-        //private NetworkVariable<byte> _netQuestionRowCount = new NetworkVariable<byte>();
-        //private NetworkVariable<byte> _netQuestionColumnCount = new NetworkVariable<byte>();
 
         private AudioClip _audioClip;
 
@@ -41,11 +31,8 @@ namespace BOYAREngine.Game
             NetworkManager.Singleton.StartHost();
 
             _hostMenuGameObject.SetActive(true);
-
             SetupHostRound();
-
             SpawnHost(NetworkManager.Singleton.ServerClientId);
-
             SetGameStarted(true);
         }
 
@@ -94,19 +81,17 @@ namespace BOYAREngine.Game
             }
         }
 
-        public void FindThemes()
+        public void SetThemeName()
         {
             var themes = GameObject.FindGameObjectsWithTag("Theme");
             for (var i = 0; i < themes.Length; i++)
             {
-                // Set parent
-                themes[i].transform.SetParent(_themeParentGameObject, false);
                 // Set name of theme
                 themes[i].GetComponent<ThemeBase>().Name.text = GameManager.Instance.NetThemeNames[i];
             }
         }
 
-        public IEnumerator FindQuestions()
+        public IEnumerator SetQuestionPrice()
         {
             yield return new WaitForSeconds(.2f);
 

@@ -4,14 +4,14 @@ using UnityEngine;
 
 namespace BOYAREngine.Game
 {
-    public class ClientAnswerButton : NetworkBehaviour
+    public class ClientAnswerButton : MonoBehaviour
     {
         public void OnClick()
         {
-            ChangeActivePlayerServerRpc(OwnerClientId);
+            HostManager.Instance.Messages.SetActivePlayer(GameManager.Instance.NetId);
         }
 
-        [ServerRpc(RequireOwnership = false)]
+        /*[ServerRpc]
         private void ChangeActivePlayerServerRpc(ulong id)
         {
             DisableAnswerButtonClientRpc();
@@ -30,7 +30,7 @@ namespace BOYAREngine.Game
         {
             QuestionManager.Instance.AnswerButtonGameObject.SetActive(false);
             Debug.Log("Disable Answer Button for All Clients");
-        }
+        }*/
 
     }
 }

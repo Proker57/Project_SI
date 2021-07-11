@@ -44,6 +44,7 @@ public class GameManager : NetworkBehaviour
 
     [Header("Player Data")]
     public List<GameObject> Players = new List<GameObject>();
+    public ulong NetId;
     public string Name;
     public int Points;
 

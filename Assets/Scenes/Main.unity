@@ -464,6 +464,7 @@ MonoBehaviour:
   IsReadyToStart: 0
   QuestionButtonsList: []
   Players: []
+  NetId: 0
   Name: 
   Points: 0
   NetQuestionRowCount:
@@ -504,9 +505,7 @@ MonoBehaviour:
   _themePrefab: {fileID: 98643710558475870, guid: bb11838c776962a47a068bf780dfedf9, type: 3}
   _questionPrefab: {fileID: 277221039489325451, guid: bda3eaefc1152d14d88413557f2d8e32, type: 3}
   _hostMenuGameObject: {fileID: 456404518}
-  _playerPrefab: {fileID: 802538931297311120, guid: a0da6244165d15f4181c16f5db0558f4, type: 3}
   _hostPrefab: {fileID: 6050348066398342671, guid: 2aab937d9bc57054c8a345ff3fdec6fa, type: 3}
-  _playerSpawnParent: {fileID: 693194918298889228}
   _hostSpawnParent: {fileID: 693194919408780599}
 --- !u!114 &39253965
 MonoBehaviour:
@@ -3699,14 +3698,13 @@ GameObject:
   - component: {fileID: 1194415763}
   - component: {fileID: 1194415762}
   - component: {fileID: 1194415760}
-  - component: {fileID: 1194415761}
   m_Layer: 5
   m_Name: Answer Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1194415759
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3716,14 +3714,14 @@ RectTransform:
   m_GameObject: {fileID: 1194415758}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 693194919632964522}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 640, y: -270}
+  m_AnchoredPosition: {x: 640, y: 450}
   m_SizeDelta: {x: 1014, y: 458}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1194415760
@@ -3738,23 +3736,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b19f03e8c388c88449fbff5d39905060, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1194415761
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1194415758}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  NetworkInstanceId: 0
-  PrefabHash: 15479726176619757473
-  PrefabHashGenerator: Answer Button
-  AlwaysReplicateAsRoot: 0
-  DontDestroyWithOwner: 0
 --- !u!114 &1194415762
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4406,6 +4387,7 @@ GameObject:
   - component: {fileID: 1601295664}
   - component: {fileID: 1601295663}
   - component: {fileID: 1601295665}
+  - component: {fileID: 1601295666}
   m_Layer: 0
   m_Name: HostManager
   m_TagString: Untagged
@@ -4425,6 +4407,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9baa399c596a9ae43a324c2b68a29a40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Messages: {fileID: 0}
   _hostCreate: {fileID: 39253964}
   _playerPrefab: {fileID: 802538931297311120, guid: a0da6244165d15f4181c16f5db0558f4, type: 3}
   _playerSpawnParent: {fileID: 693194918298889228}
@@ -4460,6 +4443,18 @@ MonoBehaviour:
   PrefabHashGenerator: HostManager
   AlwaysReplicateAsRoot: 0
   DontDestroyWithOwner: 0
+--- !u!114 &1601295666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1601295662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea129aa8939e77a4e9a48d501e114bf5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1709991017
 GameObject:
   m_ObjectHideFlags: 0
@@ -5530,32 +5525,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &693194918298889227
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 693194918298889229}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
-  m_ChildAlignment: 0
-  m_Spacing: 0
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
 --- !u!224 &693194918298889228
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5584,14 +5553,38 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 693194918298889228}
-  - component: {fileID: 693194918298889227}
+  - component: {fileID: 693194918298889230}
   m_Layer: 5
-  m_Name: Horizontal Layout
+  m_Name: '[ PLAYERS ]'
   m_TagString: PlayerParent
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &693194918298889230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 693194918298889229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 170, y: 170}
+  m_Spacing: {x: 0, y: 0}
+  m_Constraint: 2
+  m_ConstraintCount: 1
 --- !u!224 &693194918466096968
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6160,8 +6153,8 @@ GameObject:
   - component: {fileID: 693194919408780598}
   - component: {fileID: 693194919408780585}
   m_Layer: 5
-  m_Name: Host - Panel
-  m_TagString: Untagged
+  m_Name: '[ HOST]'
+  m_TagString: HostParent
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

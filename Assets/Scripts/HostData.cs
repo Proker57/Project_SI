@@ -17,6 +17,11 @@ namespace BOYAREngine.Game
             Name.OnValueChanged += ChangeName;
         }
 
+        private void Start()
+        {
+            gameObject.transform.SetParent(GameObject.FindGameObjectWithTag("HostParent").transform, false);
+        }
+
         private void ChangeName(string oldName, string newName)
         {
             Name.Value = newName;
