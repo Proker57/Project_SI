@@ -1,6 +1,7 @@
 using MLAPI;
 using MLAPI.Messaging;
 using UnityEngine;
+using UnityEngine.Networking.Types;
 
 namespace BOYAREngine.Game
 {
@@ -8,22 +9,26 @@ namespace BOYAREngine.Game
     {
         public void SetActivePlayer(ulong id)
         {
-            SetActivePlayerClientRpc(id);
+            SetActivePlayerServerRpc(id);
+
+            
+
+            Debug.Log($"Id: {id}");
         }
 
-        [ClientRpc]
-        private void SetActivePlayerClientRpc(ulong id)
+        [ServerRpc(RequireOwnership = false)]
+        private void SetActivePlayerServerRpc(ulong id)
         {
-            if (IsHost)
-            {
-                DisableAnswerButtonClientRpc();
+            Debug.Log($"Id: {id}");
+            DisableAnswerButtonClientRpc();
 
-                for (var i = 0; i < GameManager.Instance.Players.Count; i++)
+            for (var i = 0; i < GameManager.Instance.Players.Count; i++)
+            {
+                if (GameManager.Instance.Players[i].GetComponent<NetworkObject>().OwnerClientId == id)
                 {
-                    if (GameManager.Instance.Players[i].GetComponent<NetworkObject>().OwnerClientId == id)
-                    {
-                        GameManager.Instance.ChangeActivePlayer(i);
-                    }
+                    GameManager.Instance.ChangeActivePlayer(i);
+
+                    Debug.Log($"Active player: {i}");
                 }
             }
         }

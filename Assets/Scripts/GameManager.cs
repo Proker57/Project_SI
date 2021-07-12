@@ -32,6 +32,7 @@ public class GameManager : NetworkBehaviour
     public Dropdown Dropdown;
     public InputField InputName;
     public InputField InputIp;
+    public Text IpAddressText;
 
     [Header("Vars")]
     public string PackagePath;
@@ -84,6 +85,7 @@ public class GameManager : NetworkBehaviour
 
         // TODO DELETE
         DebugText.text = PackagePath;
+        IpAddressText.text = IpManager.GetIP(ADDRESSFAM.IPv4);
 
         Dropdown.onValueChanged.AddListener(delegate
         {
@@ -97,7 +99,7 @@ public class GameManager : NetworkBehaviour
 
         InputIp.onValueChanged.AddListener(delegate
         {
-            InputField_OnIpChanged(InputName);
+            InputField_OnIpChanged(InputIp);
         });
     }
 
@@ -154,10 +156,13 @@ public class GameManager : NetworkBehaviour
 
     public void ChangeActivePlayer(int index)
     {
+        ActivePlayer = index;
+
         foreach (var button in QuestionButtonsList)
         {
             button.ChangeOwnership(Players[index].GetComponent<NetworkObject>().OwnerClientId);
         }
+
 
         //ActivePlayerChangeColorClientRpc(index);
         ChangeColorServerRpc(index);
