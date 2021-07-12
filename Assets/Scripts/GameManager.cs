@@ -163,7 +163,6 @@ public class GameManager : NetworkBehaviour
             button.ChangeOwnership(Players[index].GetComponent<NetworkObject>().OwnerClientId);
         }
 
-
         //ActivePlayerChangeColorClientRpc(index);
         ChangeColorServerRpc(index);
 
@@ -183,8 +182,6 @@ public class GameManager : NetworkBehaviour
 
         // 191 121 164 Pink
         Players[index].GetComponent<Image>().color = new Color32(191, 121, 164, 255);
-
-        Debug.Log("Pink COlor");
     }
 
     [ClientRpc]
@@ -195,7 +192,5 @@ public class GameManager : NetworkBehaviour
             // 69 121 164  Blue
             player.GetComponent<Image>().color = new Color32(64, 121, 164, 255);
         }
-
-        Debug.Log("Reset color");
     }
 }

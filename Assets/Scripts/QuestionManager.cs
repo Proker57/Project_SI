@@ -34,6 +34,7 @@ namespace BOYAREngine.Game
 
         [Header("Answer")]
         [SerializeField] private Text _answer;
+        [SerializeField] private Text _answerHost;
         [SerializeField] private Image _answerImage;
         [SerializeField] private float _answerTimer;
         [SerializeField] private float _backToThemeTimer;
@@ -78,6 +79,8 @@ namespace BOYAREngine.Game
             _scenario.text = null;
             AudioSource.clip = null;
             _image.sprite = null;
+
+            _answerHost.text = GameManager.Instance.Rounds[GameManager.Instance.Round].Themes[themeIndex].Questions[questionIndex].Answers[0];
 
             GameManager.Instance.ResetColorsClientRpc();
 
@@ -126,18 +129,16 @@ namespace BOYAREngine.Game
                         isLastChunk = true;
 
                     ReceiveImageChunkClientRpc(chunks[i], isLastChunk);
-
-                    Debug.Log(chunks[i].Length);
                 }
 
                 var tex = new Texture2D(2, 2);
                 tex.LoadImage(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageData);
-                //_image.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
+                _image.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
                 _answerImage.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
             }
 
-            StartCoroutine("AnswerCountdown");
-            Invoke(nameof(AnswerCountdown), _answerTimer);
+            StartCoroutine(AnswerCountdown());
+            //Invoke(nameof(AnswerCountdown), _answerTimer);
         }
 
         public void ShowQuestionClient(int themeIndex, int questionIndex)
@@ -159,7 +160,7 @@ namespace BOYAREngine.Game
             _scenario.text = _netScenario.Value;
 
             AudioSource.gameObject.SetActive(false);
-            AudioSource.clip = null;
+            //AudioSource.clip = null;
             _image.gameObject.SetActive(false);
 
             // Audio
@@ -201,6 +202,7 @@ namespace BOYAREngine.Game
             _themePanel.SetActive(false);
             _questionPanel.SetActive(false);
             _answerPanel.SetActive(true);
+            _answerDecideHostPanel.SetActive(false);
             _answerImage.gameObject.SetActive(_netIsImage.Value);
 
             var round = GameManager.Instance.Round;
@@ -209,6 +211,16 @@ namespace BOYAREngine.Game
 
             // Client
             ShowAnswerClientRpc();
+
+            //StartCoroutine(BackToThemeCoroutine());
+            Invoke(nameof(BackToThemeClientRpc), 5f);
+        }
+
+        private IEnumerator BackToThemeCoroutine()
+        {
+            yield return new WaitForSeconds(5f);
+
+            BackToThemeClientRpc();
         }
 
         [ClientRpc]
@@ -233,7 +245,7 @@ namespace BOYAREngine.Game
             _answer.text = _netAnswer.Value;
         }
 
-        private IEnumerable AnswerCountdown()
+        private IEnumerator AnswerCountdown()
         {
             yield return new WaitForSeconds(_answerTimer);
 
@@ -249,13 +261,28 @@ namespace BOYAREngine.Game
 
             _answerImage.gameObject.SetActive(_netIsImage.Value);
 
-            StopAllCoroutines();
+            //StopAllCoroutines();
+            StopAllCoroutinesForClients();
         }
 
+        public void StopAllCoroutinesForClients()
+        {
+            Debug.Log("Local Stop all");
+            StopAllCoroutinesForClientsServerRpc();
+        }
 
+        [ServerRpc(RequireOwnership = false)]
+        private void StopAllCoroutinesForClientsServerRpc()
+        {
+            StopAllCoroutinesForClientsClientRpc();
+        }
 
-
-
+        [ClientRpc]
+        private void StopAllCoroutinesForClientsClientRpc()
+        {
+            Debug.Log("Client Stop all");
+            StopAllCoroutines();
+        }
 
         public static byte[] Compress(byte[] data)
         {
