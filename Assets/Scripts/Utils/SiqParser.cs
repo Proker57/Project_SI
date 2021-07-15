@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Xml;
+using Debug = UnityEngine.Debug;
 
 namespace Parse
 {
@@ -22,6 +24,7 @@ namespace Parse
         private string _price;
         private string _scenario;
         private string _type;
+        private bool _isMarker;
         private byte[] _audioData;
         private byte[] _imageData;
         //private AudioClip _clip;
@@ -117,6 +120,8 @@ namespace Parse
                                                         // <scenario>
                                                         if (questionChild.Name == "scenario")
                                                         {
+                                                            _isMarker = false;
+
                                                             // <atom>
                                                             foreach (XmlNode atom in questionChild.ChildNodes)
                                                             {
@@ -126,6 +131,12 @@ namespace Parse
                                                                 // Has Attribute
                                                                 if (atom.Attributes?["type"] != null)
                                                                 {
+                                                                    // Atom marker for image should be in the answer block
+                                                                    if (atom.Attributes?["type"].Value == "marker")
+                                                                    {
+                                                                        _isMarker = true;
+                                                                    }
+
                                                                     // Image
                                                                     if (atom.Attributes?["type"].Value == "image")
                                                                     {
@@ -137,12 +148,11 @@ namespace Parse
                                                                             var imageData = new byte[image.Length];
                                                                             image.Open().Read(imageData, 0, imageData.Length);
                                                                             _imageData = imageData;
-                                                                            //tex.LoadImage(imageData);
 
-                                                                            //_image = tex;
                                                                             _audioData = null;
                                                                         }
                                                                     }
+
 
                                                                     // Audio
                                                                     if (atom.Attributes?["type"].Value == "voice")
@@ -157,7 +167,6 @@ namespace Parse
                                                                             using (var ms = new MemoryStream(buffer))
                                                                                 _audioData = ms.ToArray();
 
-                                                                            //_image = null;
                                                                             _imageData = null;
                                                                             _scenario = null;
                                                                         }
@@ -166,7 +175,7 @@ namespace Parse
                                                                 else
                                                                 {
                                                                     _scenario = atom.InnerText;
-                                                                    //_image = null;
+
                                                                     _imageData = null;
                                                                     _audioData = null;
                                                                 }
@@ -204,7 +213,7 @@ namespace Parse
                                                 }
 
                                                 // Add Question in List
-                                                _questions.Add(new Question(_price, _scenario, _answers, _type, _audioData, _imageData));
+                                                _questions.Add(new Question(_price, _scenario, _answers, _type, _isMarker, _audioData, _imageData));
                                             }
                                         }
 

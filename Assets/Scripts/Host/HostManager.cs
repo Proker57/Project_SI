@@ -1,8 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using MLAPI;
-using MLAPI.Messaging;
 using UnityEngine;
 
 namespace BOYAREngine.Game
@@ -66,17 +63,12 @@ namespace BOYAREngine.Game
 
                 _hostCreate.SetGameStarted(true);
             }
-
-            //AddPlayersToListClientRpc();
-            //ReplaceNewPlayerClientRpc();
         }
 
         private void SpawnClientPlayer(ulong id)
         {
             var go = Instantiate(_playerPrefab, _playerSpawnParent);
             go.gameObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(id);
-
-            //GameManager.Instance.Players.Add(go);
         }
 
         private IEnumerator RenamePlayer(ulong id)
@@ -92,43 +84,6 @@ namespace BOYAREngine.Game
                 }
             }
         }
-
-        /*public IEnumerator FindHost()
-        {
-            yield return new WaitForSeconds(.2f);
-
-            var host = GameObject.FindGameObjectWithTag("Host");
-            host.transform.SetParent(_hostSpawnParent);
-        }
-
-        [ClientRpc]
-        private void AddPlayersToListClientRpc()
-        {
-            StartCoroutine(AddPlayersToList());
-        }
-
-        private IEnumerator AddPlayersToList()
-        {
-            GameManager.Instance.Players = new List<GameObject>();
-            yield return new WaitForSeconds(.2f);
-            GameManager.Instance.Players = GameObject.FindGameObjectsWithTag("Player").ToList();
-        }
-
-        [ClientRpc]
-        private void ReplaceNewPlayerClientRpc()
-        {
-            StartCoroutine(SetParentToNewPlayer());
-        }
-
-        private IEnumerator SetParentToNewPlayer()
-        {
-            yield return new WaitForSeconds(.2f);
-            var goList = GameObject.FindGameObjectsWithTag("Player");
-            foreach (var player in goList)
-            {
-                player.transform.SetParent(_playerSpawnParent, false);
-            }
-        }*/
     }
 }
 
