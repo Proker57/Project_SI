@@ -14,12 +14,11 @@ namespace BOYAREngine.Game
             // TODO: Check Id
             if (IsOwner && IsHost)
             {
-                ShowQuestionHost();
-
                 ShowQuestionClientRpc();
+                ShowQuestionHost();
             }
 
-            if (IsOwner && IsClient)
+            if (IsOwner && IsClient && !IsHost)
             {
                 ShowQuestionHostServerRpc();
             }

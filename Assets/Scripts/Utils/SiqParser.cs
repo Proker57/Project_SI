@@ -26,9 +26,8 @@ namespace Parse
         private string _type;
         private bool _isMarker;
         private byte[] _audioData;
-        private byte[] _imageData;
-        //private AudioClip _clip;
-        //private Texture2D _image;
+        private byte[] _imageQuestionData;
+        private byte[] _imageAnswerData;
 
         private List<string> _answers = new List<string>();
         private List<Question> _questions = new List<Question>();
@@ -121,12 +120,14 @@ namespace Parse
                                                         if (questionChild.Name == "scenario")
                                                         {
                                                             _isMarker = false;
+                                                            _imageQuestionData = null;
+                                                            _imageAnswerData = null;
 
                                                             // <atom>
                                                             foreach (XmlNode atom in questionChild.ChildNodes)
                                                             {
-                                                                //_image = null;
-                                                                _imageData = null;
+//                                                                _imageQuestionData = null;
+//                                                                _imageAnswerData = null;
 
                                                                 // Has Attribute
                                                                 if (atom.Attributes?["type"] != null)
@@ -140,15 +141,28 @@ namespace Parse
                                                                     // Image
                                                                     if (atom.Attributes?["type"].Value == "image")
                                                                     {
-                                                                        //var tex = new Texture2D(2, 2);
+                                                                        Debug.Log(_themeName + " || " + _price);
+
                                                                         var imagePath = atom.InnerText;
                                                                         var image = archive.GetEntry("Images/" + Uri.EscapeUriString(imagePath).Trim('@'));
                                                                         if (image != null)
                                                                         {
                                                                             var imageData = new byte[image.Length];
                                                                             image.Open().Read(imageData, 0, imageData.Length);
-                                                                            _imageData = imageData;
 
+                                                                            if (_isMarker == false)
+                                                                            {
+                                                                                _imageQuestionData = imageData;
+                                                                                _scenario = null;
+
+                                                                                Debug.Log("Question: " + atom.InnerText);
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                _imageAnswerData = imageData;
+                                                                                Debug.Log("Answer: " + atom.InnerText);
+                                                                            }
+                                                                            
                                                                             _audioData = null;
                                                                         }
                                                                     }
@@ -167,7 +181,8 @@ namespace Parse
                                                                             using (var ms = new MemoryStream(buffer))
                                                                                 _audioData = ms.ToArray();
 
-                                                                            _imageData = null;
+                                                                            _imageQuestionData = null;
+                                                                            _imageAnswerData = null;
                                                                             _scenario = null;
                                                                         }
                                                                     }
@@ -176,7 +191,8 @@ namespace Parse
                                                                 {
                                                                     _scenario = atom.InnerText;
 
-                                                                    _imageData = null;
+                                                                    //_imageQuestionData = null;
+                                                                    //_imageAnswerData = null;
                                                                     _audioData = null;
                                                                 }
                                                             }
@@ -213,7 +229,7 @@ namespace Parse
                                                 }
 
                                                 // Add Question in List
-                                                _questions.Add(new Question(_price, _scenario, _answers, _type, _isMarker, _audioData, _imageData));
+                                                _questions.Add(new Question(_price, _scenario, _answers, _type, _isMarker, _audioData, _imageQuestionData, _imageAnswerData));
                                             }
                                         }
 

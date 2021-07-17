@@ -9,15 +9,17 @@ public class Question
     public string Scenario;
     public string Type;
     [HideInInspector] public byte[] AudioData;
-    [HideInInspector] public byte[] ImageData;
+    [HideInInspector] public byte[] ImageQuestionData;
+    [HideInInspector] public byte[] ImageAnswerData;
 
     public List<string> Answers;
 
     public bool IsMusic;
-    public bool IsImage;
+    public bool IsQuestionImage;
+    public bool IsAnswerImage;
     public bool IsMarker;
 
-    public Question(string price, string scenario, List<string> answers, string type = null, bool isMarker = false, byte[] audioData = null, byte[] imageData = null)
+    public Question(string price, string scenario, List<string> answers, string type = null, bool isMarker = false, byte[] audioData = null, byte[] imageQuestionData = null, byte[] imageAnswerData = null)
     {
         Price = price;
         Scenario = scenario;
@@ -25,7 +27,8 @@ public class Question
         IsMarker = isMarker;
 
         AudioData = audioData;
-        ImageData = imageData;
+        ImageQuestionData = imageQuestionData;
+        ImageAnswerData = imageAnswerData;
         Answers = answers;
 
         if (audioData != null)
@@ -33,9 +36,14 @@ public class Question
             IsMusic = true;
         }
 
-        if (ImageData != null)
+        if (ImageQuestionData != null)
         {
-            IsImage = true;
+            IsQuestionImage = true;
+        }
+
+        if (ImageAnswerData != null)
+        {
+            IsAnswerImage = true;
         }
     }
 }
