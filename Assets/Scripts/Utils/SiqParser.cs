@@ -24,6 +24,8 @@ namespace Parse
         private string _price;
         private string _scenario;
         private string _type;
+        private string _catTheme;
+        private string _catPrice;
         private bool _isMarker;
         private byte[] _audioData;
         private byte[] _imageQuestionData;
@@ -67,12 +69,15 @@ namespace Parse
                                 // _themeName
                                 _themeName = themeNode.Attributes?["name"].Value;
 
+                                _info = null;
+
                                 // <questions>
                                 foreach (XmlNode questionsNode in themeNode.ChildNodes)
                                 {
                                     // Reload QuestionList
                                     _questions = new List<Question>();
 
+                                    
                                     // <info>
                                     if (_questionsIteration == 0)
                                     {
@@ -98,6 +103,8 @@ namespace Parse
                                                 _price = questionNode.Attributes?["price"].Value;
 
                                                 _type = null;
+                                                _catTheme = null;
+                                                _catPrice = null;
 
                                                 // <question data>
                                                 bool skipType = false, skipScenario = false, skipRight = false, skipWrong = false;
@@ -109,6 +116,17 @@ namespace Parse
                                                         if (questionChild.Name == "type")
                                                         {
                                                             _type = questionChild.Attributes?["name"].Value;
+
+                                                            if (_type.Equals("cat"))
+                                                            {
+                                                                if (questionChild.HasChildNodes)
+                                                                {
+                                                                    _catTheme = questionChild.ChildNodes[0].InnerText;
+                                                                    _catPrice = questionChild.ChildNodes[1].InnerText;
+                                                                }
+                                                                
+                                                            }
+
                                                             skipType = true;
                                                             continue;
                                                         }
@@ -224,7 +242,7 @@ namespace Parse
                                                 }
 
                                                 // Add Question in List
-                                                _questions.Add(new Question(_price, _scenario, _answers, _type, _isMarker, _audioData, _imageQuestionData, _imageAnswerData));
+                                                _questions.Add(new Question(_price, _scenario, _answers, _type, _isMarker, _audioData, _imageQuestionData, _imageAnswerData, _catTheme, _catPrice));
                                             }
                                         }
 

@@ -8,6 +8,8 @@ public class Question
     public string Price;
     public string Scenario;
     public string Type;
+    public string CatTheme;
+    public string CatPrice;
     [HideInInspector] public byte[] AudioData;
     [HideInInspector] public byte[] ImageQuestionData;
     [HideInInspector] public byte[] ImageAnswerData;
@@ -19,11 +21,14 @@ public class Question
     public bool IsAnswerImage;
     public bool IsMarker;
 
-    public Question(string price, string scenario, List<string> answers, string type = null, bool isMarker = false, byte[] audioData = null, byte[] imageQuestionData = null, byte[] imageAnswerData = null)
+    public Question(string price, string scenario, List<string> answers, string type = null, bool isMarker = false, byte[] audioData = null, byte[] imageQuestionData = null, byte[] imageAnswerData = null, string catTheme = null, string catPrice = null)
     {
         Price = price;
         Scenario = scenario;
         Type = type;
+        CatTheme = catTheme;
+        CatPrice = catPrice;
+
         IsMarker = isMarker;
 
         AudioData = audioData;

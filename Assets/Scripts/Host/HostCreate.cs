@@ -60,7 +60,12 @@ namespace BOYAREngine.Game
                     // Add Theme names to the game data list
                     GameManager.Instance.NetThemeNames.Add(GameManager.Instance.Rounds[round].Themes[i].Name);
                     // Set name to Theme object
-                    theme.GetComponentInChildren<Text>().text = GameManager.Instance.Rounds[round].Themes[i].Name;
+                    theme.GetComponentInChildren<ThemeBase>().Name.text = GameManager.Instance.Rounds[round].Themes[i].Name;
+                    if (GameManager.Instance.Rounds[round].Themes[i].Info != null)
+                    {
+                        theme.GetComponentInChildren<ThemeBase>().Info = GameManager.Instance.Rounds[round].Themes[i].Info;
+                        theme.GetComponentInChildren<ThemeBase>().TurnOnInfoPanel();
+                    }
 
                     for (var j = 0; j < GameManager.Instance.Rounds[round].Themes[i].Questions.Count; j++)
                     {

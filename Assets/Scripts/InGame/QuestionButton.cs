@@ -35,10 +35,11 @@ namespace BOYAREngine.Game
             GetComponentInChildren<Text>().text = null;
         }
 
-        [ClientRpc(Delivery = RpcDelivery.Reliable)]
+        [ClientRpc]
         private void ShowQuestionClientRpc()
         {
-            QuestionManager.Instance.ShowQuestionClient(ThemeIndex, QuestionIndex);
+            if (!IsHost)
+                QuestionManager.Instance.ShowQuestionClient(ThemeIndex, QuestionIndex);
 
             GetComponent<Button>().interactable = false;
             GetComponentInChildren<Text>().text = null;

@@ -21,6 +21,11 @@ namespace BOYAREngine.Game
         [SerializeField] private GameObject _questionPanel;
         [SerializeField] private GameObject _answerPanel;
         [SerializeField] private GameObject _answerDecideHostPanel;
+        [Space]
+        [SerializeField] private GameObject _catPanel;
+        [SerializeField] private GameObject _catHostDataPanel;
+        [SerializeField] private Text _catThemeText;
+        [SerializeField] private Text _catPriceText;
 
         [Header("Local Objects")]
         public GameObject AnswerButtonGameObject;
@@ -32,23 +37,31 @@ namespace BOYAREngine.Game
         [Header("Scenario")]
         [SerializeField] private Text _scenario;
 
+        [Header("Info")]
+        [SerializeField] private GameObject _infoPanel;
+        [SerializeField] private Text _infoText;
+
         [Header("Answer")]
         [SerializeField] private Text _answer;
         [SerializeField] private Text _answerHost;
         [SerializeField] private Image _answerImage;
-        [SerializeField] private float _answerTimer;
-        [SerializeField] private float _backToThemeTimer;
+        [Space]
+        // Timer
+        public float QuestionTimer;
+        public float AnswerTimer;
+
+        [HideInInspector] public bool IsRightAnswer;
 
         // Base
+        public NetworkVariable<string> NetQuestionType = new NetworkVariable<string>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.ServerOnly });
+        private const string Cat = "cat";
+        private const string Auction = "auction";
+        private List<byte[]> _imageQuestionChunksList = new List<byte[]>(64);
+        private List<byte[]> _imageAnswerChunksList = new List<byte[]>(64);
         private NetworkVariable<string> _netScenario = new NetworkVariable<string>(new NetworkVariableSettings {ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.ServerOnly});
         private NetworkVariable<string> _netAnswer = new NetworkVariable<string>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.ServerOnly });
-
-        private NetworkVariable<bool> _netIsAudio = new NetworkVariable<bool>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.ServerOnly });
         private NetworkVariable<bool> _netIsQuestionImage = new NetworkVariable<bool>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.ServerOnly });
         private NetworkVariable<bool> _netIsAnswerImage = new NetworkVariable<bool>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.ServerOnly });
-        private NetworkVariable<bool> _netIsMarker = new NetworkVariable<bool>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.ServerOnly });
-        private List<byte[]> _imageQuestionChunksList = new List<byte[]>();
-        private List<byte[]> _imageAnswerChunksList = new List<byte[]>(256);
 
         private void Awake()
         {
@@ -62,6 +75,12 @@ namespace BOYAREngine.Game
             }
         }
 
+        private void Start()
+        {
+            QuestionTimer = 10f;
+            AnswerTimer = 5f;
+        }
+
         // QUESTION HOST
         public void ShowQuestionHost(int themeIndex, int questionIndex)
         {
@@ -69,15 +88,12 @@ namespace BOYAREngine.Game
             _questionPanel.SetActive(true);
             _answerPanel.SetActive(false);
             _answerDecideHostPanel.SetActive(true);
-            _netIsAudio.Value = false;
             _netIsQuestionImage.Value = false;
             _netIsAnswerImage.Value = false;
-            _netIsMarker.Value = false;
-
             AudioSource.gameObject.SetActive(false);
             _questionImage.gameObject.SetActive(false);
             _answerImage.gameObject.SetActive(false);
-
+            _catPanel.SetActive(false);
             _scenario.text = null;
             AudioSource.clip = null;
             _questionImage.sprite = null;
@@ -89,23 +105,18 @@ namespace BOYAREngine.Game
             var round = GameManager.Instance.Round;
             GameManager.Instance.QuestionPrice = int.Parse(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Price);
 
+            NetQuestionType.Value = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Type;
+
             if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Scenario != null )
             {
                 _scenario.text = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Scenario;
                 _netScenario.Value = _scenario.text;
             }
 
-            // Marker
-            if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsMarker)
-            {
-                _netIsMarker.Value = true;
-            }
-
             // Music
             if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsMusic)
             {
                 AudioSource.gameObject.SetActive(true);
-                _netIsAudio.Value = true;
 
                 using (var ms = new MemoryStream(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].AudioData))
                 {
@@ -126,27 +137,7 @@ namespace BOYAREngine.Game
             if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsQuestionImage)
             {
                 _questionImage.gameObject.SetActive(true);
-
                 _netIsQuestionImage.Value = true;
-
-                /*var compressedData = NetDataUtils.CompressGZip(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageQuestionData);
-
-                // TODO: Delete
-                Debug.Log($"Raw data: {GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageQuestionData.Length} || Compressed Data: {compressedData.Length}");
-
-                var chunks = NetDataUtils.SplitArrayToChunks(compressedData, 1200).ToList();
-                var isLastChunk = false;
-                for (var i = 0; i < chunks.Count; i++)
-                {
-                    if (i == chunks.Count - 1)
-                    {
-                        isLastChunk = true;
-
-                        Debug.Log("Host is done sending question image");
-                    }
-
-                    ReceiveQuestionImageChunkClientRpc(chunks[i], isLastChunk);
-                }*/
 
                 StartCoroutine(SendQuestionChunks(themeIndex, questionIndex, round));
 
@@ -156,16 +147,36 @@ namespace BOYAREngine.Game
                 _questionImage.rectTransform.sizeDelta = new Vector2(_questionImage.sprite.texture.width, _questionImage.sprite.texture.height);
             }
 
-            StartCoroutine(AnswerCountdown());
+            if (NetQuestionType.Value != null)
+            {
+                if (NetQuestionType.Value.Equals(Cat))
+                {
+                    Debug.Log("Cat");
+                    _catPanel.SetActive(true);
+                    _catHostDataPanel.SetActive(true);
+                    _catThemeText.text = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatTheme;
+                    _catPriceText.text = $"Цена: {GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatPrice}";
+
+                    if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatPrice != null)
+                    {
+                        GameManager.Instance.QuestionPrice = int.Parse(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatPrice);
+                    }
+                }
+
+                if (NetQuestionType.Value.Equals(Auction))
+                {
+                    Debug.Log("Auction");
+                }
+            }
+            else
+            {
+                StartCoroutine(AnswerCountdown());
+            }
         }
 
         private IEnumerator SendQuestionChunks(int themeIndex, int questionIndex, int round)
         {
             var compressedData = NetDataUtils.CompressGZip(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageQuestionData);
-
-            // TODO: Delete
-            Debug.Log($"Raw data: {GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageQuestionData.Length} || Compressed Data: {compressedData.Length}");
-
             var chunks = NetDataUtils.SplitArrayToChunks(compressedData, 1200).ToList();
             var isLastChunk = false;
             for (var i = 0; i < chunks.Count; i++)
@@ -173,7 +184,6 @@ namespace BOYAREngine.Game
                 if (i == chunks.Count - 1)
                 {
                     isLastChunk = true;
-                    Debug.Log("Sending question image is done");
                     yield return null;
                 }
 
@@ -184,7 +194,7 @@ namespace BOYAREngine.Game
 
         private IEnumerator AnswerCountdown()
         {
-            yield return new WaitForSeconds(_answerTimer);
+            yield return new WaitForSeconds(QuestionTimer);
 
             ShowAnswerHost(GameManager.Instance.ThemeIndexCurrent, GameManager.Instance.QuestionIndexCurrent);
         }
@@ -196,29 +206,32 @@ namespace BOYAREngine.Game
                 _themePanel.SetActive(false);
                 _questionPanel.SetActive(true);
                 _answerPanel.SetActive(false);
-
                 _answerImage.gameObject.SetActive(false);
                 _questionImage.gameObject.SetActive(false);
 
-                AnswerButtonGameObject.SetActive(true);
-
                 _scenario.text = null;
 
-                Invoke(nameof(WaitForQuestionClient), 0.3f);
+                Invoke(nameof(WaitForQuestionClient), 0.1f);
             }
         }
 
         private void WaitForQuestionClient()
         {
+            if (NetQuestionType.Value == null)
+            {
+                AnswerButtonGameObject.SetActive(true);
+            }
+            else
+            {
+                if (NetQuestionType.Value.Equals(Cat))
+                {
+                    _catPanel.SetActive(true);
+                }
+            }
+
             _scenario.text = _netScenario.Value;
 
             AudioSource.gameObject.SetActive(false);
-
-            // Audio
-//            if (_netIsAudio.Value)
-//            {
-//                AudioSource.gameObject.SetActive(true);
-//            }
         }
 
         [ClientRpc]
@@ -231,15 +244,10 @@ namespace BOYAREngine.Game
                 if (isLast)
                 {
                     var result = _imageQuestionChunksList.SelectMany(x => x).ToArray();
-
                     var decompressedData = NetDataUtils.DecompressGZip(result);
-
                     var tex = new Texture2D(2, 2);
                     tex.LoadImage(decompressedData);
-
                     _questionImage.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
-
-                    Debug.Log("Client received Question image");
                     _questionImage.gameObject.SetActive(true);
                 }
             }
@@ -262,7 +270,6 @@ namespace BOYAREngine.Game
             if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsAnswerImage)
             {
                 _answerImage.gameObject.SetActive(true);
-
                 _netIsAnswerImage.Value = true;
 
                 StartCoroutine(SendAnswerChunks(themeIndex, questionIndex));
@@ -270,23 +277,29 @@ namespace BOYAREngine.Game
                 var tex = new Texture2D(2, 2);
                 tex.LoadImage(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageAnswerData);
                 _answerImage.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
-                _answerImage.rectTransform.sizeDelta = new Vector2(_answerImage.sprite.texture.width / 6f, _answerImage.sprite.texture.height / 6f);
+                _answerImage.rectTransform.sizeDelta = new Vector2(_answerImage.sprite.texture.width, _answerImage.sprite.texture.height);
             }
+
+            if (NetQuestionType.Value != null)
+            {
+                if (NetQuestionType.Value.Equals(Cat) && !IsRightAnswer)
+                {
+                    GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().Points.Value -= GameManager.Instance.QuestionPrice;
+                }
+            }
+
+            IsRightAnswer = false;
 
             // Client
             ShowAnswerClientRpc();
 
-            Invoke(nameof(BackToThemeClientRpc), 5f);
+            Invoke(nameof(BackToThemeClientRpc), AnswerTimer);
         }
 
         private IEnumerator SendAnswerChunks(int themeIndex, int questionIndex)
         {
             var round = GameManager.Instance.Round;
             var compressedData = NetDataUtils.CompressGZip(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageAnswerData);
-
-            // TODO: Delete
-            Debug.Log($"Raw data: {GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageAnswerData.Length} || Compressed Data: {compressedData.Length}");
-
             var chunks = NetDataUtils.SplitArrayToChunks(compressedData, 1200).ToList();
             var isLastChunk = false;
             for (var i = 0; i < chunks.Count; i++)
@@ -294,7 +307,6 @@ namespace BOYAREngine.Game
                 if (i == chunks.Count - 1)
                 {
                     isLastChunk = true;
-                    Debug.Log("Sending answer image is done");
                     yield return null;
                 }
 
@@ -310,22 +322,14 @@ namespace BOYAREngine.Game
             {
                 _imageAnswerChunksList.Add(chunk);
 
-                Debug.Log(chunk.Length);
-
                 if (isLast)
                 {
                     var result = _imageAnswerChunksList.SelectMany(x => x).ToArray();
-
                     var decompressedData = NetDataUtils.DecompressGZip(result);
-
                     var tex = new Texture2D(2, 2);
                     tex.LoadImage(decompressedData);
                     _answerImage.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
-
-                    //
                     _answerImage.gameObject.SetActive(true);
-
-                    Debug.Log("Client received Answer image");
                 }
             }
         }
@@ -336,17 +340,10 @@ namespace BOYAREngine.Game
             _themePanel.SetActive(false);
             _questionPanel.SetActive(false);
             _answerPanel.SetActive(true);
-            //_answerImage.gameObject.SetActive(_netIsAnswerImage.Value);
-
             AnswerButtonGameObject.SetActive(false);
-
             _answer.text = null;
 
-            //_imageChunksList = new List<byte[]>();
-
-            //_questionImage.sprite = null;
-
-            Invoke(nameof(WaitForAnswerClient), 0.2f);
+            Invoke(nameof(WaitForAnswerClient), 0.1f);
         }
 
         private void WaitForAnswerClient()
@@ -385,6 +382,30 @@ namespace BOYAREngine.Game
         private void StopAllCoroutinesForClientsClientRpc()
         {
             StopAllCoroutines();
+        }
+
+        public void CatQuestionContinue()
+        {
+            _catPanel.SetActive(false);
+            TurnOffCatPanelClientRpc();
+
+            StartCoroutine(AnswerCountdown());
+        }
+
+        [ClientRpc]
+        private void TurnOffCatPanelClientRpc()
+        {
+            if (!IsHost)
+            {
+                _catPanel.SetActive(false);
+            }
+        }
+
+        public void ShowInfo(bool isActive, string text)
+        {
+            _infoPanel.SetActive(isActive);
+
+            _infoText.text = text;
         }
     }
 }

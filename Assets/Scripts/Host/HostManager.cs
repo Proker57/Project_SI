@@ -8,7 +8,7 @@ namespace BOYAREngine.Game
     {
         public static HostManager Instance;
 
-        public HostMessages Messages;
+        [HideInInspector] public HostMessages Messages;
 
         [Header("Links")]
         [SerializeField] private HostCreate _hostCreate;

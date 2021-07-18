@@ -58,7 +58,7 @@ public class GameManager : NetworkBehaviour
     public int QuestionPrice;
 
     //
-    public Text DebugText;
+    public Text PackagePathText;
 
     private void Awake()
     {
@@ -84,7 +84,7 @@ public class GameManager : NetworkBehaviour
         Volume = 1f;
 
         // TODO DELETE
-        DebugText.text = PackagePath;
+        PackagePathText.text = PackagePath;
         IpAddressText.text = IpManager.GetIP(ADDRESSFAM.IPv4);
 
         Dropdown.onValueChanged.AddListener(delegate
@@ -131,7 +131,7 @@ public class GameManager : NetworkBehaviour
             Debug.Log("Index changed");
             ChosenPackage = $"{PackagePath}/{PackageFileNames[dropdown.value - 1]}";
 
-            DebugText.text = ChosenPackage;
+            PackagePathText.text = ChosenPackage;
             CreateHostButton.interactable = true;
             IsReadyToStart = true;
         }
@@ -163,10 +163,13 @@ public class GameManager : NetworkBehaviour
             button.ChangeOwnership(Players[index].GetComponent<NetworkObject>().OwnerClientId);
         }
 
+        if (QuestionManager.Instance.NetQuestionType.Value != null && QuestionManager.Instance.NetQuestionType.Value.Equals("cat"))
+        {
+            QuestionManager.Instance.CatQuestionContinue();
+        }
+
         //ActivePlayerChangeColorClientRpc(index);
         ChangeColorServerRpc(index);
-
-        Debug.Log("Active Player Changed");
     }
 
     [ServerRpc(RequireOwnership = false)]
