@@ -141,8 +141,6 @@ namespace Parse
                                                                     // Image
                                                                     if (atom.Attributes?["type"].Value == "image")
                                                                     {
-                                                                        Debug.Log(_themeName + " || " + _price);
-
                                                                         var imagePath = atom.InnerText;
                                                                         var image = archive.GetEntry("Images/" + Uri.EscapeUriString(imagePath).Trim('@'));
                                                                         if (image != null)
@@ -154,13 +152,10 @@ namespace Parse
                                                                             {
                                                                                 _imageQuestionData = imageData;
                                                                                 _scenario = null;
-
-                                                                                Debug.Log("Question: " + atom.InnerText);
                                                                             }
                                                                             else
                                                                             {
                                                                                 _imageAnswerData = imageData;
-                                                                                Debug.Log("Answer: " + atom.InnerText);
                                                                             }
                                                                             
                                                                             _audioData = null;
