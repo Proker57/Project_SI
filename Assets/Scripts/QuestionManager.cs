@@ -183,10 +183,12 @@ namespace BOYAREngine.Game
             }
             else
             {
-                if (!GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsQuestionImage)
-                {
-                    StartCoroutine(AnswerCountdown());
-                }
+//                if (!GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsQuestionImage)
+//                {
+//                    StartCoroutine(AnswerCountdown());
+//                }
+
+                StartCoroutine(AnswerCountdown());
             }
 
             //StartCoroutine(AnswerCountdown());
@@ -194,11 +196,13 @@ namespace BOYAREngine.Game
 
         private IEnumerator SendQuestionChunks(int themeIndex, int questionIndex, int round)
         {
-            var compressedData = NetDataUtils.CompressGZip(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageQuestionData);
-            var chunks = NetDataUtils.SplitArrayToChunks(compressedData, 1200).ToList();
+            //var compressedData = NetDataUtils.CompressGZip(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageQuestionData);
+            //var chunks = NetDataUtils.SplitArrayToChunks(compressedData, 1200).ToList();
+            var chunks = NetDataUtils.SplitArrayToChunks(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageQuestionData, 1300).ToList();
             var isLastChunk = false;
             for (var i = 0; i < chunks.Count; i++)
             {
+                Debug.Log(chunks[i].Length);
                 if (i == chunks.Count - 1)
                 {
                     isLastChunk = true;
@@ -228,8 +232,8 @@ namespace BOYAREngine.Game
                 _answerImage.gameObject.SetActive(false);
                 _questionImage.gameObject.SetActive(false);
 
-                _imageQuestionChunksList = new List<byte[]>();
-                _imageAnswerChunksList = new List<byte[]>();
+                //_imageQuestionChunksList = new List<byte[]>();
+                //_imageAnswerChunksList = new List<byte[]>();
 
                 _scenario.text = null;
 
@@ -270,12 +274,15 @@ namespace BOYAREngine.Game
             {
                 _imageQuestionChunksList.Add(chunk);
 
+                Debug.Log(chunk.Length);
+
                 if (isLast)
                 {
                     var result = _imageQuestionChunksList.SelectMany(x => x).ToArray();
-                    var decompressedData = NetDataUtils.DecompressGZip(result);
+                    //var decompressedData = NetDataUtils.DecompressGZip(result);
                     var tex = new Texture2D(2, 2);
-                    tex.LoadImage(decompressedData);
+                    //tex.LoadImage(decompressedData);
+                    tex.LoadImage(result);
                     _questionImage.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
                     _questionImage.gameObject.SetActive(true);
                 }
@@ -337,8 +344,9 @@ namespace BOYAREngine.Game
         private IEnumerator SendAnswerChunks(int themeIndex, int questionIndex)
         {
             var round = GameManager.Instance.Round;
-            var compressedData = NetDataUtils.CompressGZip(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageAnswerData);
-            var chunks = NetDataUtils.SplitArrayToChunks(compressedData, 1300).ToList();
+            //var compressedData = NetDataUtils.CompressGZip(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageAnswerData);
+            //var chunks = NetDataUtils.SplitArrayToChunks(compressedData, 1300).ToList();
+            var chunks = NetDataUtils.SplitArrayToChunks(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageAnswerData, 1300).ToList();
             var isLastChunk = false;
             for (var i = 0; i < chunks.Count; i++)
             {
@@ -368,9 +376,10 @@ namespace BOYAREngine.Game
                 if (isLast)
                 {
                     var result = _imageAnswerChunksList.SelectMany(x => x).ToArray();
-                    var decompressedData = NetDataUtils.DecompressGZip(result);
+                    //var decompressedData = NetDataUtils.DecompressGZip(result);
                     var tex = new Texture2D(2, 2);
-                    tex.LoadImage(decompressedData);
+                    //tex.LoadImage(decompressedData);
+                    tex.LoadImage(result);
                     _answerImage.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
                     _answerImage.gameObject.SetActive(true);
                 }
@@ -403,6 +412,12 @@ namespace BOYAREngine.Game
 
             _imageQuestionChunksList = new List<byte[]>();
             _imageAnswerChunksList = new List<byte[]>();
+            _scenario.text = null;
+
+            if (IsHost)
+            {
+                _netScenario.Value = null;
+            }
 
             _answerImage.gameObject.SetActive(false);
             _questionImage.gameObject.SetActive(false);

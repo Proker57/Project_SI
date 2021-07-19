@@ -39,7 +39,9 @@ namespace BOYAREngine.Game
         private void ShowQuestionClientRpc()
         {
             if (!IsHost)
+            {
                 QuestionManager.Instance.ShowQuestionClient(ThemeIndex, QuestionIndex);
+            }
 
             GetComponent<Button>().interactable = false;
             GetComponentInChildren<Text>().text = null;

@@ -78,9 +78,9 @@ public class GameManager : NetworkBehaviour
 
     private void Start()
     {
-        PackagePath = Path.Combine("/!Source", "DELETE");
+        //PackagePath = Path.Combine("/!Source", "DELETE");
 
-        //PackagePath = "/storage/emulated/0/Android/media/com.BOYAREGames.SiGameMobile";
+        PackagePath = "/storage/emulated/0/Android/media/com.BOYAREGames.SiGameMobile";
 
         LoadPackageNames();
 
