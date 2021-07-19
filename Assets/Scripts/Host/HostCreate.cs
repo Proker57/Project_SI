@@ -36,13 +36,18 @@ namespace BOYAREngine.Game
             SetGameStarted(true);
         }
 
-        private void SetupHostRound()
+        public void SetupHostRound()
         {
             // Check if Package is chosen
             if (GameManager.Instance.IsReadyToStart)
             {
                 // Change State
                 SetGameStarted(true);
+
+                if (GameManager.Instance.Round > 0)
+                {
+                    DeleteThemes();
+                }
 
                 // Parse Package from folder
                 GameManager.Instance.ParsePackage();
@@ -73,6 +78,7 @@ namespace BOYAREngine.Game
                         var question = Instantiate(_questionPrefab, theme.transform);
                         question.GetComponent<NetworkObject>().Spawn();
                         GameManager.Instance.QuestionButtonsList.Add(question);
+                        GameManager.Instance.QuestionsLeft = GameManager.Instance.QuestionButtonsList.Count;
                         // Add Question Price the the game data list
                         GameManager.Instance.NetQuestionPrice.Add(new Vector2(i, j), GameManager.Instance.Rounds[round].Themes[i].Questions[j].Price);
                         // Set price to the object
@@ -109,6 +115,14 @@ namespace BOYAREngine.Game
                     questions[index].GetComponent<QuestionBase>().Price.text = GameManager.Instance.NetQuestionPrice[new Vector2(i, j)];
                     index++;
                 }
+            }
+        }
+
+        private void DeleteThemes()
+        { 
+            foreach (Transform child in _themeParentGameObject.transform)
+            {
+                Destroy(child.gameObject);
             }
         }
 

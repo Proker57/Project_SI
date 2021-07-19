@@ -15,6 +15,9 @@ public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance;
 
+    [Space]
+    public HostCreate HostCreate;
+
     [Header("Network")]
     [SerializeField] private UNetTransport _uNet;
 
@@ -42,6 +45,7 @@ public class GameManager : NetworkBehaviour
 
     [Header("Host Data")]
     public List<NetworkObject> QuestionButtonsList = new List<NetworkObject>();
+    public int QuestionsLeft;
 
     [Header("Player Data")]
     public List<GameObject> Players = new List<GameObject>();

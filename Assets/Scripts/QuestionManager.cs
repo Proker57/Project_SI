@@ -21,11 +21,15 @@ namespace BOYAREngine.Game
         [SerializeField] private GameObject _questionPanel;
         [SerializeField] private GameObject _answerPanel;
         [SerializeField] private GameObject _answerDecideHostPanel;
-        [Space]
+        [Header("Cat")]
         [SerializeField] private GameObject _catPanel;
         [SerializeField] private GameObject _catHostDataPanel;
         [SerializeField] private Text _catThemeText;
         [SerializeField] private Text _catPriceText;
+        [Header("Auction")]
+        [SerializeField] private GameObject _auctionPanel;
+        [SerializeField] private GameObject _auctionButtons;
+        [SerializeField] private GameObject _auctionPointsPanel;
 
         [Header("Local Objects")]
         public GameObject AnswerButtonGameObject;
@@ -51,6 +55,7 @@ namespace BOYAREngine.Game
         public float AnswerTimer;
 
         [HideInInspector] public bool IsRightAnswer;
+        public bool IsShowQuestion;
 
         // Base
         public NetworkVariable<string> NetQuestionType = new NetworkVariable<string>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.ServerOnly });
@@ -94,6 +99,7 @@ namespace BOYAREngine.Game
             _questionImage.gameObject.SetActive(false);
             _answerImage.gameObject.SetActive(false);
             _catPanel.SetActive(false);
+            IsShowQuestion = true;
             _scenario.text = null;
             AudioSource.clip = null;
             _questionImage.sprite = null;
@@ -101,6 +107,7 @@ namespace BOYAREngine.Game
             _answerHost.text = GameManager.Instance.Rounds[GameManager.Instance.Round].Themes[themeIndex].Questions[questionIndex].Answers[0];
 
             GameManager.Instance.ResetColorsClientRpc();
+            GameManager.Instance.QuestionsLeft--;
 
             var round = GameManager.Instance.Round;
             GameManager.Instance.QuestionPrice = int.Parse(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Price);
@@ -139,7 +146,10 @@ namespace BOYAREngine.Game
                 _questionImage.gameObject.SetActive(true);
                 _netIsQuestionImage.Value = true;
 
-                StartCoroutine(SendQuestionChunks(themeIndex, questionIndex, round));
+                if (GameManager.Instance.Players.Count > 0)
+                {
+                    StartCoroutine(SendQuestionChunks(themeIndex, questionIndex, round));
+                }
 
                 var tex = new Texture2D(2, 2);
                 tex.LoadImage(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageQuestionData);
@@ -149,9 +159,9 @@ namespace BOYAREngine.Game
 
             if (NetQuestionType.Value != null)
             {
+                // Cat
                 if (NetQuestionType.Value.Equals(Cat))
                 {
-                    Debug.Log("Cat");
                     _catPanel.SetActive(true);
                     _catHostDataPanel.SetActive(true);
                     _catThemeText.text = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatTheme;
@@ -163,15 +173,23 @@ namespace BOYAREngine.Game
                     }
                 }
 
+                // Auction
                 if (NetQuestionType.Value.Equals(Auction))
                 {
-                    Debug.Log("Auction");
+                    _auctionPanel.SetActive(true);
+                    _auctionButtons.SetActive(true);
+                    _auctionPointsPanel.SetActive(true);
                 }
             }
             else
             {
-                StartCoroutine(AnswerCountdown());
+                if (!GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsQuestionImage)
+                {
+                    StartCoroutine(AnswerCountdown());
+                }
             }
+
+            //StartCoroutine(AnswerCountdown());
         }
 
         private IEnumerator SendQuestionChunks(int themeIndex, int questionIndex, int round)
@@ -184,6 +202,7 @@ namespace BOYAREngine.Game
                 if (i == chunks.Count - 1)
                 {
                     isLastChunk = true;
+                    // StartCoroutine(AnswerCountdown());
                     yield return null;
                 }
 
@@ -209,6 +228,9 @@ namespace BOYAREngine.Game
                 _answerImage.gameObject.SetActive(false);
                 _questionImage.gameObject.SetActive(false);
 
+                _imageQuestionChunksList = new List<byte[]>();
+                _imageAnswerChunksList = new List<byte[]>();
+
                 _scenario.text = null;
 
                 Invoke(nameof(WaitForQuestionClient), 0.1f);
@@ -223,9 +245,16 @@ namespace BOYAREngine.Game
             }
             else
             {
+                // Cat
                 if (NetQuestionType.Value.Equals(Cat))
                 {
                     _catPanel.SetActive(true);
+                }
+
+                // Auction
+                if (NetQuestionType.Value.Equals(Auction))
+                {
+                    _auctionPanel.SetActive(true);
                 }
             }
 
@@ -261,6 +290,7 @@ namespace BOYAREngine.Game
             _answerPanel.SetActive(true);
             _answerDecideHostPanel.SetActive(false);
             _answerImage.gameObject.SetActive(_netIsAnswerImage.Value);
+            IsShowQuestion = false;
 
             var round = GameManager.Instance.Round;
             _answer.text = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Answers[0];
@@ -272,7 +302,10 @@ namespace BOYAREngine.Game
                 _answerImage.gameObject.SetActive(true);
                 _netIsAnswerImage.Value = true;
 
-                StartCoroutine(SendAnswerChunks(themeIndex, questionIndex));
+                if (GameManager.Instance.Players.Count > 0)
+                {
+                    StartCoroutine(SendAnswerChunks(themeIndex, questionIndex));
+                }
 
                 var tex = new Texture2D(2, 2);
                 tex.LoadImage(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageAnswerData);
@@ -293,6 +326,11 @@ namespace BOYAREngine.Game
             // Client
             ShowAnswerClientRpc();
 
+            //            if (!GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsAnswerImage)
+            //            {
+            //                Invoke(nameof(BackToThemeClientRpc), AnswerTimer);
+            //            }
+
             Invoke(nameof(BackToThemeClientRpc), AnswerTimer);
         }
 
@@ -300,13 +338,16 @@ namespace BOYAREngine.Game
         {
             var round = GameManager.Instance.Round;
             var compressedData = NetDataUtils.CompressGZip(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageAnswerData);
-            var chunks = NetDataUtils.SplitArrayToChunks(compressedData, 1200).ToList();
+            var chunks = NetDataUtils.SplitArrayToChunks(compressedData, 1300).ToList();
             var isLastChunk = false;
             for (var i = 0; i < chunks.Count; i++)
             {
+                Debug.Log(chunks[i].Length);
+
                 if (i == chunks.Count - 1)
                 {
                     isLastChunk = true;
+                    //Invoke(nameof(BackToThemeClientRpc), AnswerTimer);
                     yield return null;
                 }
 
@@ -321,6 +362,8 @@ namespace BOYAREngine.Game
             if (IsHost == false)
             {
                 _imageAnswerChunksList.Add(chunk);
+
+                Debug.Log(chunk.Length);
 
                 if (isLast)
                 {
@@ -365,6 +408,17 @@ namespace BOYAREngine.Game
             _questionImage.gameObject.SetActive(false);
 
             StopAllCoroutinesForClients();
+
+            ChangeRound();
+        }
+
+        public void ChangeRound()
+        {
+            if (GameManager.Instance.QuestionsLeft == 0)
+            {
+                GameManager.Instance.Round++;
+                GameManager.Instance.HostCreate.SetupHostRound();
+            }
         }
 
         public void StopAllCoroutinesForClients()
