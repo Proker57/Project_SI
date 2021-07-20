@@ -1,34 +1,47 @@
+using MLAPI;
+using MLAPI.Messaging;
 using MLAPI.NetworkVariable;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace BOYAREngine.Game
 {
-    public class Auction : MonoBehaviour
+    public class Auction : NetworkBehaviour
     {
+        [SerializeField] private GameObject[] _pointPanels;
+        [Space]
         [SerializeField] private Text[] _texts;
 
-        public NetworkVariable<int>[] _bets = new NetworkVariable<int>[5];
+        public NetworkVariable<string>[] Bets = new NetworkVariable<string>[5];
+
+        private int _currentBet;
+        private bool _isFirstBet;
+        private bool _isPassed;
 
         private void Start()
         {
-            _bets[0].OnValueChanged += Bet1_OnValueChanged;
-            _bets[1].OnValueChanged += Bet2_OnValueChanged;
-            _bets[2].OnValueChanged += Bet3_OnValueChanged;
-            _bets[3].OnValueChanged += Bet4_OnValueChanged;
-            _bets[4].OnValueChanged += Bet5_OnValueChanged;
+            _isFirstBet = true;
+
+            Bets[0].OnValueChanged += Bet1_OnValueChanged;
+            Bets[1].OnValueChanged += Bet2_OnValueChanged;
+            Bets[2].OnValueChanged += Bet3_OnValueChanged;
+            Bets[3].OnValueChanged += Bet4_OnValueChanged;
+            Bets[4].OnValueChanged += Bet5_OnValueChanged;
 
             ResetValues();
         }
 
-        private void ResetValues()
+        public void ResetValues()
         {
-            foreach (var bet in _bets)
+            foreach (var bet in Bets)
             {
-                bet.Value = 0;
+                bet.Value = "0";
             }
-        }
 
+            _isFirstBet = true;
+            _isPassed = false;
+            _currentBet = 0;
+        }
 
         public void OnPass()
         {
@@ -36,59 +49,123 @@ namespace BOYAREngine.Game
             {
                 if (GameManager.Instance.Players[i].GetComponent<PlayerData>().OwnerClientId == GameManager.Instance.NetId)
                 {
-                    _texts[i].text = "Пас";
+                    PassServerRpc(i);
                 }
             }
+
+            _isPassed = true;
         }
 
         public void OnBet()
         {
-            for (var i = 0; i < GameManager.Instance.Players.Count; i++)
+            if (!_isPassed)
             {
-                if (GameManager.Instance.Players[i].GetComponent<PlayerData>().OwnerClientId == GameManager.Instance.NetId)
+                for (var i = 0; i < GameManager.Instance.Players.Count; i++)
                 {
-                    _bets[i].Value += 100;
-                    _texts[i].text = _bets[i].Value.ToString();
+                    if (GameManager.Instance.Players[i].GetComponent<PlayerData>().OwnerClientId == GameManager.Instance.NetId)
+                    {
+                        if (GameManager.Instance.Players[i].GetComponent<PlayerData>().Points.Value >= GameManager.Instance.QuestionPrice)
+                        {
+                            if (_isFirstBet)
+                            {
+                                Bets[i].Value = GameManager.Instance.QuestionPrice.ToString();
+                                _texts[i].text = Bets[i].Value;
+                                _currentBet = GameManager.Instance.QuestionPrice;
+                                GameManager.Instance.Players[i].GetComponent<PlayerData>().AuctionBet.Value = _currentBet;
+                                _isFirstBet = false;
+                            }
+                            else
+                            {
+                                if (_currentBet < GameManager.Instance.Players[i].GetComponent<PlayerData>().Points.Value)
+                                {
+                                    Bets[i].Value = (_currentBet + 100).ToString();
+                                    _texts[i].text = Bets[i].Value;
+                                    _currentBet = int.Parse(Bets[i].Value);
+                                    GameManager.Instance.Players[i].GetComponent<PlayerData>().AuctionBet.Value = _currentBet;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
 
         public void OnVaBank()
         {
-            for (var i = 0; i < GameManager.Instance.Players.Count; i++)
+            if (!_isPassed)
             {
-                if (GameManager.Instance.Players[i].GetComponent<PlayerData>().OwnerClientId == GameManager.Instance.NetId)
+                for (var i = 0; i < GameManager.Instance.Players.Count; i++)
                 {
-                    _bets[i].Value = GameManager.Instance.Points;
-                    _texts[i].text = _bets[i].Value.ToString();
+                    if (GameManager.Instance.Players[i].GetComponent<PlayerData>().OwnerClientId == GameManager.Instance.NetId)
+                    {
+                        Bets[i].Value = GameManager.Instance.Players[i].GetComponent<PlayerData>().Points.Value.ToString();
+                        _texts[i].text = Bets[i].Value;
+                    }
                 }
             }
         }
 
-        private void Bet1_OnValueChanged(int oldVar, int newVar)
+        // Change bet
+        [ServerRpc(RequireOwnership = false)]
+        private void ChangeBetServerRpc(int index, string newVar)
         {
-            _texts[0].text = _bets[0].Value.ToString();
+            ChangeBetClientRpc(index, newVar);
         }
 
-        private void Bet2_OnValueChanged(int oldVar, int newVar)
+        [ClientRpc]
+        private void ChangeBetClientRpc(int index, string newVar)
         {
-            _texts[1].text = _bets[1].Value.ToString();
+            Bets[index].Value = newVar;
+            _texts[index].text = Bets[index].Value;
         }
 
-        private void Bet3_OnValueChanged(int oldVar, int newVar)
+        // Pass
+        [ServerRpc(RequireOwnership = false)]
+        private void PassServerRpc(int index)
         {
-            _texts[2].text = _bets[2].Value.ToString();
+            PassClientRpc(index);
         }
 
-        private void Bet4_OnValueChanged(int oldVar, int newVar)
+        [ClientRpc]
+        private void PassClientRpc(int index)
         {
-            _texts[3].text = _bets[3].Value.ToString();
+            Bets[index].Value = "Пас";
+            _texts[index].text = Bets[index].Value;
         }
 
-        private void Bet5_OnValueChanged(int oldVar, int newVar)
+        public void TurnOnPanels()
         {
-            _texts[4].text = _bets[4].Value.ToString();
+            for (var i = 0; i < GameManager.Instance.Players.Count; i++)
+            {
+                _pointPanels[i].SetActive(true);
+            }
         }
+
+        private void Bet1_OnValueChanged(string oldVar, string newVar)
+        {
+            ChangeBetServerRpc(0, newVar);
+        }
+
+        private void Bet2_OnValueChanged(string oldVar, string newVar)
+        {
+            ChangeBetServerRpc(1, newVar);
+        }
+
+        private void Bet3_OnValueChanged(string oldVar, string newVar)
+        {
+            ChangeBetServerRpc(2, newVar);
+        }
+
+        private void Bet4_OnValueChanged(string oldVar, string newVar)
+        {
+            ChangeBetServerRpc(3, newVar);
+        }
+
+        private void Bet5_OnValueChanged(string oldVar, string newVar)
+        {
+            ChangeBetServerRpc(4, newVar);
+        }
+
     }
 }
 

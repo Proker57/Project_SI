@@ -9,10 +9,17 @@ namespace BOYAREngine.Game
     {
         [SerializeField] private GameObject _menuGameObject;
         [SerializeField] private GameObject _answerPanel;
+        [Space]
+        [SerializeField] private GameObject[] _activePlayerButtons;
 
         public void OnMenuButtonClick()
         {
             _menuGameObject.SetActive(!_menuGameObject.activeSelf);
+
+            for (var i = 0; i < GameManager.Instance.Players.Count; i++)
+            {
+                _activePlayerButtons[i].SetActive(true);
+            }
         }
 
         public void OnAnswerPanelClick()

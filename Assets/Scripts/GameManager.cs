@@ -51,7 +51,7 @@ public class GameManager : NetworkBehaviour
     public List<GameObject> Players = new List<GameObject>();
     public ulong NetId;
     public string Name;
-    public int Points;
+    //public int Points;
 
     [Header("Game Data")]
     public NetworkList<string> NetThemeNames = new NetworkList<string>();
@@ -87,7 +87,6 @@ public class GameManager : NetworkBehaviour
         // TODO Save value on device
         Volume = 1f;
 
-        // TODO DELETE
         PackagePathText.text = PackagePath;
         IpAddressText.text = IpManager.GetIP(ADDRESSFAM.IPv4);
 
@@ -167,9 +166,19 @@ public class GameManager : NetworkBehaviour
             button.ChangeOwnership(Players[index].GetComponent<NetworkObject>().OwnerClientId);
         }
 
-        if (QuestionManager.Instance.NetQuestionType.Value != null && QuestionManager.Instance.NetQuestionType.Value.Equals("cat"))
+        if (QuestionManager.Instance.NetQuestionType.Value != null)
         {
-            QuestionManager.Instance.CatQuestionContinue();
+            // Cat
+            if (QuestionManager.Instance.NetQuestionType.Value.Equals("cat"))
+            {
+                QuestionManager.Instance.CatQuestionContinue();
+            }
+
+            // Auction
+            if (QuestionManager.Instance.NetQuestionType.Value.Equals("auction"))
+            {
+                QuestionManager.Instance.AuctionQuestionContinue();
+            }
         }
 
         //ActivePlayerChangeColorClientRpc(index);

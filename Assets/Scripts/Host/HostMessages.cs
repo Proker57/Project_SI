@@ -29,6 +29,18 @@ namespace BOYAREngine.Game
         {
             QuestionManager.Instance.AnswerButtonGameObject.SetActive(false);
         }
+
+        [ClientRpc]
+        public void SetQuestionPriceClientRpc(int price)
+        {
+            GameManager.Instance.QuestionPrice = price;
+        }
+
+        [ClientRpc]
+        public void TurnOnAuctionPanelsClientRpc()
+        {
+            GameManager.Instance.GetComponent<Auction>().TurnOnPanels();
+        }
     }
 }
 

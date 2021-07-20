@@ -110,7 +110,7 @@ namespace BOYAREngine.Game
             GameManager.Instance.QuestionsLeft--;
 
             var round = GameManager.Instance.Round;
-            GameManager.Instance.QuestionPrice = int.Parse(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Price);
+            HostManager.Instance.Messages.SetQuestionPriceClientRpc(int.Parse(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Price));
 
             NetQuestionType.Value = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Type;
 
@@ -176,6 +176,8 @@ namespace BOYAREngine.Game
                 // Auction
                 if (NetQuestionType.Value.Equals(Auction))
                 {
+                    //GameManager.Instance.GetComponent<Auction>().TurnOnPanels();
+                    HostManager.Instance.Messages.TurnOnAuctionPanelsClientRpc();
                     _auctionPanel.SetActive(true);
                     _auctionButtons.SetActive(true);
                     _auctionPointsPanel.SetActive(true);
@@ -183,21 +185,12 @@ namespace BOYAREngine.Game
             }
             else
             {
-//                if (!GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsQuestionImage)
-//                {
-//                    StartCoroutine(AnswerCountdown());
-//                }
-
                 StartCoroutine(AnswerCountdown());
             }
-
-            //StartCoroutine(AnswerCountdown());
         }
 
         private IEnumerator SendQuestionChunks(int themeIndex, int questionIndex, int round)
         {
-            //var compressedData = NetDataUtils.CompressGZip(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageQuestionData);
-            //var chunks = NetDataUtils.SplitArrayToChunks(compressedData, 1200).ToList();
             var chunks = NetDataUtils.SplitArrayToChunks(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageQuestionData, 1300).ToList();
             var isLastChunk = false;
             for (var i = 0; i < chunks.Count; i++)
@@ -206,7 +199,6 @@ namespace BOYAREngine.Game
                 if (i == chunks.Count - 1)
                 {
                     isLastChunk = true;
-                    // StartCoroutine(AnswerCountdown());
                     yield return null;
                 }
 
@@ -231,9 +223,6 @@ namespace BOYAREngine.Game
                 _answerPanel.SetActive(false);
                 _answerImage.gameObject.SetActive(false);
                 _questionImage.gameObject.SetActive(false);
-
-                //_imageQuestionChunksList = new List<byte[]>();
-                //_imageAnswerChunksList = new List<byte[]>();
 
                 _scenario.text = null;
 
@@ -279,9 +268,7 @@ namespace BOYAREngine.Game
                 if (isLast)
                 {
                     var result = _imageQuestionChunksList.SelectMany(x => x).ToArray();
-                    //var decompressedData = NetDataUtils.DecompressGZip(result);
                     var tex = new Texture2D(2, 2);
-                    //tex.LoadImage(decompressedData);
                     tex.LoadImage(result);
                     _questionImage.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
                     _questionImage.gameObject.SetActive(true);
@@ -322,9 +309,16 @@ namespace BOYAREngine.Game
 
             if (NetQuestionType.Value != null)
             {
+                // Cat
                 if (NetQuestionType.Value.Equals(Cat) && !IsRightAnswer)
                 {
                     GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().Points.Value -= GameManager.Instance.QuestionPrice;
+                }
+
+                // Auction
+                if (NetQuestionType.Value.Equals(Auction) && !IsRightAnswer)
+                {
+                    GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().Points.Value -= GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().AuctionBet.Value; ;
                 }
             }
 
@@ -333,19 +327,12 @@ namespace BOYAREngine.Game
             // Client
             ShowAnswerClientRpc();
 
-            //            if (!GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsAnswerImage)
-            //            {
-            //                Invoke(nameof(BackToThemeClientRpc), AnswerTimer);
-            //            }
-
             Invoke(nameof(BackToThemeClientRpc), AnswerTimer);
         }
 
         private IEnumerator SendAnswerChunks(int themeIndex, int questionIndex)
         {
             var round = GameManager.Instance.Round;
-            //var compressedData = NetDataUtils.CompressGZip(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageAnswerData);
-            //var chunks = NetDataUtils.SplitArrayToChunks(compressedData, 1300).ToList();
             var chunks = NetDataUtils.SplitArrayToChunks(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageAnswerData, 1300).ToList();
             var isLastChunk = false;
             for (var i = 0; i < chunks.Count; i++)
@@ -355,7 +342,6 @@ namespace BOYAREngine.Game
                 if (i == chunks.Count - 1)
                 {
                     isLastChunk = true;
-                    //Invoke(nameof(BackToThemeClientRpc), AnswerTimer);
                     yield return null;
                 }
 
@@ -376,9 +362,7 @@ namespace BOYAREngine.Game
                 if (isLast)
                 {
                     var result = _imageAnswerChunksList.SelectMany(x => x).ToArray();
-                    //var decompressedData = NetDataUtils.DecompressGZip(result);
                     var tex = new Texture2D(2, 2);
-                    //tex.LoadImage(decompressedData);
                     tex.LoadImage(result);
                     _answerImage.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
                     _answerImage.gameObject.SetActive(true);
@@ -467,6 +451,23 @@ namespace BOYAREngine.Game
             if (!IsHost)
             {
                 _catPanel.SetActive(false);
+            }
+        }
+
+        public void AuctionQuestionContinue()
+        {
+            _auctionPanel.SetActive(false);
+            TurnOffAuctionPanelClientRpc();
+
+            StartCoroutine(AnswerCountdown());
+        }
+
+        [ClientRpc]
+        private void TurnOffAuctionPanelClientRpc()
+        {
+            if (!IsHost)
+            {
+                _auctionPanel.SetActive(false);
             }
         }
 
