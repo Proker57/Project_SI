@@ -137,7 +137,10 @@ namespace BOYAREngine.Game
                     }
                 }
 
-                AudioSource.Play();
+                if (NetQuestionType.Value == null)
+                {
+                    AudioSource.Play();
+                }
             }
 
             // Question Image
@@ -176,7 +179,6 @@ namespace BOYAREngine.Game
                 // Auction
                 if (NetQuestionType.Value.Equals(Auction))
                 {
-                    //GameManager.Instance.GetComponent<Auction>().TurnOnPanels();
                     HostManager.Instance.Messages.TurnOnAuctionPanelsClientRpc();
                     _auctionPanel.SetActive(true);
                     _auctionButtons.SetActive(true);
@@ -318,7 +320,7 @@ namespace BOYAREngine.Game
                 // Auction
                 if (NetQuestionType.Value.Equals(Auction) && !IsRightAnswer)
                 {
-                    GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().Points.Value -= GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().AuctionBet.Value; ;
+                    GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().Points.Value -= GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().AuctionBet.Value;
                 }
             }
 
@@ -417,6 +419,8 @@ namespace BOYAREngine.Game
             {
                 GameManager.Instance.Round++;
                 GameManager.Instance.HostCreate.SetupHostRound();
+
+                //HostManager.Instance.Messages.SetupRoundClientRpc();
             }
         }
 
@@ -442,6 +446,11 @@ namespace BOYAREngine.Game
             _catPanel.SetActive(false);
             TurnOffCatPanelClientRpc();
 
+            if (GameManager.Instance.Rounds[GameManager.Instance.Round].Themes[GameManager.Instance.ThemeIndexCurrent].Questions[GameManager.Instance.QuestionIndexCurrent].IsMusic)
+            {
+                AudioSource.Play();
+            }
+
             StartCoroutine(AnswerCountdown());
         }
 
@@ -458,6 +467,11 @@ namespace BOYAREngine.Game
         {
             _auctionPanel.SetActive(false);
             TurnOffAuctionPanelClientRpc();
+
+            if (GameManager.Instance.Rounds[GameManager.Instance.Round].Themes[GameManager.Instance.ThemeIndexCurrent].Questions[GameManager.Instance.QuestionIndexCurrent].IsMusic)
+            {
+                AudioSource.Play();
+            }
 
             StartCoroutine(AnswerCountdown());
         }

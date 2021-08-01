@@ -43,15 +43,13 @@ namespace BOYAREngine.Game
             {
                 GameManager.Instance.QuestionButtonsList = new List<NetworkObject>();
 
-                //GameManager.Instance.NetQuestionRowCount = new NetworkVariable<byte>();
-                //GameManager.Instance.NetQuestionColumnCount = new NetworkVariable<byte>();
-
                 GameManager.Instance.NetThemeNames = new NetworkList<string>();
                 GameManager.Instance.NetQuestionPrice = new NetworkDictionary<Vector2, string>();
 
-
                 GameManager.Instance.Round++;
                 GameManager.Instance.HostCreate.SetupHostRound();
+
+                HostManager.Instance.Messages.SetupRoundClientRpc();
             }
         }
     }

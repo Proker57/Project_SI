@@ -3,6 +3,7 @@ using BOYAREngine.Net;
 using UnityEngine;
 using UnityEngine.UI;
 using MLAPI;
+using MLAPI.NetworkVariable.Collections;
 
 namespace BOYAREngine.Game
 {
@@ -95,6 +96,9 @@ namespace BOYAREngine.Game
         public void SetThemeName()
         {
             var themes = GameObject.FindGameObjectsWithTag("Theme");
+
+            Debug.Log(themes.Length);
+
             for (var i = 0; i < themes.Length; i++)
             {
                 // Set name of theme
@@ -104,7 +108,7 @@ namespace BOYAREngine.Game
 
         public IEnumerator SetQuestionPrice()
         {
-            yield return new WaitForSeconds(.2f);
+            yield return new WaitForSeconds(.1f);
 
             var questions = GameObject.FindGameObjectsWithTag("Question");
             var index = 0;
@@ -119,10 +123,13 @@ namespace BOYAREngine.Game
         }
 
         private void DeleteThemes()
-        { 
-            foreach (Transform child in _themeParentGameObject.transform)
+        {
+            if (IsHost)
             {
-                Destroy(child.gameObject);
+                foreach (Transform child in _themeParentGameObject.transform)
+                {
+                    Destroy(child.gameObject);
+                }
             }
         }
 

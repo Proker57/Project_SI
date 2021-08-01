@@ -1,5 +1,6 @@
 using System.Collections;
 using MLAPI;
+using MLAPI.NetworkVariable.Collections;
 using UnityEngine;
 
 namespace BOYAREngine.Game
@@ -55,14 +56,31 @@ namespace BOYAREngine.Game
 
             if (NetworkManager.Singleton.LocalClientId == id)
             {
-                _hostCreate.SetThemeName();
-                StartCoroutine(_hostCreate.SetQuestionPrice());
+                SetupRound();
                 StartCoroutine(RenamePlayer(id));
 
                 GameManager.Instance.NetId = id;
 
                 _hostCreate.SetGameStarted(true);
             }
+        }
+
+        public void SetupRound()
+        {
+            if (!IsHost)
+            {
+                //GameManager.Instance.NetThemeNames = new NetworkList<string>();
+            }
+
+            StartCoroutine(WaitForSetupRound());
+        }
+
+        private IEnumerator WaitForSetupRound()
+        {
+            yield return new WaitForSeconds(0.1f);
+
+            _hostCreate.SetThemeName();
+            StartCoroutine(_hostCreate.SetQuestionPrice());
         }
 
         private void SpawnClientPlayer(ulong id)

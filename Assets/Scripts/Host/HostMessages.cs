@@ -41,6 +41,12 @@ namespace BOYAREngine.Game
         {
             GameManager.Instance.GetComponent<Auction>().TurnOnPanels();
         }
+
+        [ClientRpc]
+        public void SetupRoundClientRpc()
+        {
+            HostManager.Instance.SetupRound();
+        }
     }
 }
 

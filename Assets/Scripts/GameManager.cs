@@ -56,12 +56,11 @@ public class GameManager : NetworkBehaviour
     [Header("Game Data")]
     public NetworkList<string> NetThemeNames = new NetworkList<string>();
     public NetworkDictionary<Vector2, string> NetQuestionPrice = new NetworkDictionary<Vector2, string>();
-    [HideInInspector] public NetworkVariable<byte> NetQuestionRowCount = new NetworkVariable<byte>();
-    [HideInInspector] public NetworkVariable<byte> NetQuestionColumnCount = new NetworkVariable<byte>();
+    public NetworkVariable<byte> NetQuestionRowCount = new NetworkVariable<byte>();
+    public NetworkVariable<byte> NetQuestionColumnCount = new NetworkVariable<byte>();
 
     public int QuestionPrice;
 
-    //
     public Text PackagePathText;
 
     private void Awake()
@@ -78,9 +77,9 @@ public class GameManager : NetworkBehaviour
 
     private void Start()
     {
-        //PackagePath = Path.Combine("/!Source", "DELETE");
+        PackagePath = Path.Combine("/!Source", "DELETE");
 
-        PackagePath = "/storage/emulated/0/Android/media/com.BOYAREGames.SiGameMobile";
+        //PackagePath = "/storage/emulated/0/Android/media/com.BOYAREGames.SiGameMobile";
 
         LoadPackageNames();
 

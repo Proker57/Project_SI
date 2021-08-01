@@ -6,6 +6,7 @@ namespace BOYAREngine.Game
     public class GameSettings : MonoBehaviour
     {
         [SerializeField] private GameObject _settingsPanel;
+        [SerializeField] private GameObject _infoPanel;
 
         [SerializeField] private InputField _questionTimerInputField;
         [SerializeField] private InputField _answerTimerInputField;
@@ -25,9 +26,14 @@ namespace BOYAREngine.Game
             });
         }
 
-        public void OnClick()
+        public void OnSettingsClick()
         {
             _settingsPanel.SetActive(!_settingsPanel.activeSelf);
+        }
+
+        public void OnInfoClick()
+        {
+            _infoPanel.SetActive(!_infoPanel.activeSelf);
         }
 
         private void QuestionTimerInputField_OnNameChanged(InputField input)
