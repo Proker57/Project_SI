@@ -49,8 +49,10 @@ namespace BOYAREngine.Game
         [SerializeField] private Text _answer;
         [SerializeField] private Text _answerHost;
         [SerializeField] private Image _answerImage;
+
         [Space]
         // Timer
+        public float RoundTimer;
         public float QuestionTimer;
         public float AnswerTimer;
 
@@ -86,30 +88,14 @@ namespace BOYAREngine.Game
             AnswerTimer = 5f;
         }
 
-        // QUESTION HOST
         public void ShowQuestionHost(int themeIndex, int questionIndex)
         {
-            _themePanel.SetActive(false);
-            _questionPanel.SetActive(true);
-            _answerPanel.SetActive(false);
-            _answerDecideHostPanel.SetActive(true);
-            _netIsQuestionImage.Value = false;
-            _netIsAnswerImage.Value = false;
-            AudioSource.gameObject.SetActive(false);
-            _questionImage.gameObject.SetActive(false);
-            _answerImage.gameObject.SetActive(false);
-            _catPanel.SetActive(false);
-            IsShowQuestion = true;
-            _scenario.text = null;
-            AudioSource.clip = null;
-            _questionImage.sprite = null;
-
-            _answerHost.text = GameManager.Instance.Rounds[GameManager.Instance.Round].Themes[themeIndex].Questions[questionIndex].Answers[0];
-
-            GameManager.Instance.ResetColorsClientRpc();
-            GameManager.Instance.QuestionsLeft--;
+            ResetQuestionData();
 
             var round = GameManager.Instance.Round;
+            _answerHost.text = GameManager.Instance.Rounds[GameManager.Instance.Round].Themes[themeIndex].Questions[questionIndex].Answers[0];
+
+            HostManager.Instance.Messages.ResetColorsClientRpc();
             HostManager.Instance.Messages.SetQuestionPriceClientRpc(int.Parse(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Price));
 
             NetQuestionType.Value = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Type;
@@ -120,7 +106,44 @@ namespace BOYAREngine.Game
                 _netScenario.Value = _scenario.text;
             }
 
-            // Music
+            ReadMusicInQuestion(round, themeIndex, questionIndex);
+
+            // Question Image
+            ReadImageInQuestion(round, themeIndex, questionIndex);
+
+            if (NetQuestionType.Value != null)
+            {
+                // Cat
+                if (NetQuestionType.Value.Equals(Cat))
+                {
+                    _catPanel.SetActive(true);
+                    _catHostDataPanel.SetActive(true);
+                    _catThemeText.text = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatTheme;
+                    _catPriceText.text = $"Цена: {GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatPrice}";
+
+                    if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatPrice != null)
+                    {
+                        GameManager.Instance.QuestionPriceCurrent = int.Parse(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatPrice);
+                    }
+                }
+
+                // Auction
+                if (NetQuestionType.Value.Equals(Auction))
+                {
+                    HostManager.Instance.Messages.TurnOnAuctionPanelsClientRpc();
+                    _auctionPanel.SetActive(true);
+                    _auctionButtons.SetActive(true);
+                    _auctionPointsPanel.SetActive(true);
+                }
+            }
+            else
+            {
+                StartCoroutine(AnswerCountdown());
+            }
+        }
+
+        private void ReadMusicInQuestion(int round, int themeIndex, int questionIndex)
+        {
             if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsMusic)
             {
                 AudioSource.gameObject.SetActive(true);
@@ -142,8 +165,10 @@ namespace BOYAREngine.Game
                     AudioSource.Play();
                 }
             }
+        }
 
-            // Question Image
+        private void ReadImageInQuestion(int round, int themeIndex, int questionIndex)
+        {
             if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsQuestionImage)
             {
                 _questionImage.gameObject.SetActive(true);
@@ -158,36 +183,6 @@ namespace BOYAREngine.Game
                 tex.LoadImage(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].ImageQuestionData);
                 _questionImage.sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100.0f);
                 _questionImage.rectTransform.sizeDelta = new Vector2(_questionImage.sprite.texture.width, _questionImage.sprite.texture.height);
-            }
-
-            if (NetQuestionType.Value != null)
-            {
-                // Cat
-                if (NetQuestionType.Value.Equals(Cat))
-                {
-                    _catPanel.SetActive(true);
-                    _catHostDataPanel.SetActive(true);
-                    _catThemeText.text = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatTheme;
-                    _catPriceText.text = $"Цена: {GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatPrice}";
-
-                    if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatPrice != null)
-                    {
-                        GameManager.Instance.QuestionPrice = int.Parse(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].CatPrice);
-                    }
-                }
-
-                // Auction
-                if (NetQuestionType.Value.Equals(Auction))
-                {
-                    HostManager.Instance.Messages.TurnOnAuctionPanelsClientRpc();
-                    _auctionPanel.SetActive(true);
-                    _auctionButtons.SetActive(true);
-                    _auctionPointsPanel.SetActive(true);
-                }
-            }
-            else
-            {
-                StartCoroutine(AnswerCountdown());
             }
         }
 
@@ -314,7 +309,7 @@ namespace BOYAREngine.Game
                 // Cat
                 if (NetQuestionType.Value.Equals(Cat) && !IsRightAnswer)
                 {
-                    GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().Points.Value -= GameManager.Instance.QuestionPrice;
+                    GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().Points.Value -= GameManager.Instance.QuestionPriceCurrent;
                 }
 
                 // Auction
@@ -410,19 +405,18 @@ namespace BOYAREngine.Game
 
             StopAllCoroutinesForClients();
 
-            ChangeRound();
-        }
-
-        public void ChangeRound()
-        {
-            if (GameManager.Instance.QuestionsLeft == 0)
+            if (IsHost)
             {
-                GameManager.Instance.Round++;
-                GameManager.Instance.HostCreate.SetupHostRound();
+                GameManager.Instance.QuestionsLeft--;
 
-                //HostManager.Instance.Messages.SetupRoundClientRpc();
+                if (GameManager.Instance.QuestionsLeft == 0)
+                {
+                    HostManager.Instance.Messages.NextRoundClientRpc();
+                }
+
             }
         }
+
 
         public void StopAllCoroutinesForClients()
         {
@@ -490,6 +484,24 @@ namespace BOYAREngine.Game
             _infoPanel.SetActive(isActive);
 
             _infoText.text = text;
+        }
+
+        private void ResetQuestionData()
+        {
+            _themePanel.SetActive(false);
+            _questionPanel.SetActive(true);
+            _answerPanel.SetActive(false);
+            _answerDecideHostPanel.SetActive(true);
+            _netIsQuestionImage.Value = false;
+            _netIsAnswerImage.Value = false;
+            AudioSource.gameObject.SetActive(false);
+            _questionImage.gameObject.SetActive(false);
+            _answerImage.gameObject.SetActive(false);
+            _catPanel.SetActive(false);
+            IsShowQuestion = true;
+            _scenario.text = null;
+            AudioSource.clip = null;
+            _questionImage.sprite = null;
         }
     }
 }

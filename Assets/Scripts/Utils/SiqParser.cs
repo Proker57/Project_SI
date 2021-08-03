@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Xml;
-using Debug = UnityEngine.Debug;
 
 namespace Parse
 {
@@ -62,7 +60,6 @@ namespace Parse
                         // <themes>
                         foreach (XmlNode roundChild in roundNode.ChildNodes)
                         {
-
                             // <theme>
                             foreach (XmlNode themeNode in roundChild)
                             {
@@ -77,7 +74,6 @@ namespace Parse
                                     // Reload QuestionList
                                     _questions = new List<Question>();
 
-                                    
                                     // <info>
                                     if (_questionsIteration == 0)
                                     {
@@ -124,7 +120,6 @@ namespace Parse
                                                                     _catTheme = questionChild.ChildNodes[0].InnerText;
                                                                     _catPrice = questionChild.ChildNodes[1].InnerText;
                                                                 }
-                                                                
                                                             }
 
                                                             skipType = true;
@@ -144,9 +139,6 @@ namespace Parse
                                                             // <atom>
                                                             foreach (XmlNode atom in questionChild.ChildNodes)
                                                             {
-//                                                                _imageQuestionData = null;
-//                                                                _imageAnswerData = null;
-
                                                                 // Has Attribute
                                                                 if (atom.Attributes?["type"] != null)
                                                                 {
@@ -203,9 +195,6 @@ namespace Parse
                                                                 else
                                                                 {
                                                                     _scenario = atom.InnerText;
-
-                                                                    //_imageQuestionData = null;
-                                                                    //_imageAnswerData = null;
                                                                     _audioData = null;
                                                                 }
                                                             }

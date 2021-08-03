@@ -3,9 +3,6 @@ using System.IO;
 using System.Linq;
 using BOYAREngine.Game;
 using MLAPI;
-using MLAPI.Messaging;
-using MLAPI.NetworkVariable;
-using MLAPI.NetworkVariable.Collections;
 using MLAPI.Transports.UNET;
 using Parse;
 using UnityEngine;
@@ -15,15 +12,12 @@ public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance;
 
-    [Space]
-    public HostCreate HostCreate;
-
     [Header("Network")]
     [SerializeField] private UNetTransport _uNet;
 
     [Header("Logic")]
     public List<Round> Rounds;
-    public int ActivePlayer = 0;
+    public int ActivePlayer;
 
     public int ThemeIndexCurrent;
     public int QuestionIndexCurrent;
@@ -37,11 +31,15 @@ public class GameManager : NetworkBehaviour
     public InputField InputIp;
     public Text IpAddressText;
 
+    [Header("Package Data")]
+    public Text AuthorNameText;
+    public Text DescriptionText;
+
     [Header("Vars")]
     public string PackagePath;
     public string ChosenPackage;
     public float Volume;
-    public bool IsReadyToStart;
+    public bool IsPacketChosen;
 
     [Header("Host Data")]
     public List<NetworkObject> QuestionButtonsList = new List<NetworkObject>();
@@ -51,15 +49,12 @@ public class GameManager : NetworkBehaviour
     public List<GameObject> Players = new List<GameObject>();
     public ulong NetId;
     public string Name;
-    //public int Points;
 
     [Header("Game Data")]
-    public NetworkList<string> NetThemeNames = new NetworkList<string>();
-    public NetworkDictionary<Vector2, string> NetQuestionPrice = new NetworkDictionary<Vector2, string>();
-    public NetworkVariable<byte> NetQuestionRowCount = new NetworkVariable<byte>();
-    public NetworkVariable<byte> NetQuestionColumnCount = new NetworkVariable<byte>();
+    public List<string> ThemeNames = new List<string>();
+    public Dictionary<Vector2, string> QuestionPrice = new Dictionary<Vector2, string>();
 
-    public int QuestionPrice;
+    public int QuestionPriceCurrent;
 
     public Text PackagePathText;
 
@@ -77,8 +72,9 @@ public class GameManager : NetworkBehaviour
 
     private void Start()
     {
+        // PC
         PackagePath = Path.Combine("/!Source", "DELETE");
-
+        // Mobile
         //PackagePath = "/storage/emulated/0/Android/media/com.BOYAREGames.SiGameMobile";
 
         LoadPackageNames();
@@ -89,20 +85,7 @@ public class GameManager : NetworkBehaviour
         PackagePathText.text = PackagePath;
         IpAddressText.text = IpManager.GetIP(ADDRESSFAM.IPv4);
 
-        Dropdown.onValueChanged.AddListener(delegate
-        {
-            Dropdown_OnValueChanged(Dropdown);
-        });
-
-        InputName.onValueChanged.AddListener(delegate
-        {
-            InputField_OnNameChanged(InputName);
-        });
-
-        InputIp.onValueChanged.AddListener(delegate
-        {
-            InputField_OnIpChanged(InputIp);
-        });
+        SetListeners();
     }
 
     public void LoadPackageNames()
@@ -121,21 +104,49 @@ public class GameManager : NetworkBehaviour
         var p = new SiqParser();
         var package = ChosenPackage;
 
-
         p.Parser(package);
         Rounds = p.Rounds;
+    }
+
+    public void ClearData()
+    {
+        QuestionButtonsList = new List<NetworkObject>();
+        ThemeNames = new List<string>();
+        QuestionPrice = new Dictionary<Vector2, string>();
+    }
+
+    private void SetListeners()
+    {
+        Dropdown.onValueChanged.AddListener(delegate
+        {
+            Dropdown_OnValueChanged(Dropdown);
+        });
+
+        InputName.onValueChanged.AddListener(delegate
+        {
+            InputField_OnNameChanged(InputName);
+        });
+
+        InputIp.onValueChanged.AddListener(delegate
+        {
+            InputField_OnIpChanged(InputIp);
+        });
     }
 
     public void Dropdown_OnValueChanged(Dropdown dropdown)
     {
         if (dropdown.value != 0)
         {
-            Debug.Log("Index changed");
             ChosenPackage = $"{PackagePath}/{PackageFileNames[dropdown.value - 1]}";
 
             PackagePathText.text = ChosenPackage;
             CreateHostButton.interactable = true;
-            IsReadyToStart = true;
+            IsPacketChosen = true;
+
+            var ap = new AuthorParser();
+            ap.Parse(ChosenPackage);
+            AuthorNameText.text = ap.AuthorName;
+            DescriptionText.text = ap.Description;
         }
         else
         {
@@ -167,45 +178,26 @@ public class GameManager : NetworkBehaviour
 
         if (QuestionManager.Instance.NetQuestionType.Value != null)
         {
-            // Cat
-            if (QuestionManager.Instance.NetQuestionType.Value.Equals("cat"))
-            {
-                QuestionManager.Instance.CatQuestionContinue();
-            }
-
-            // Auction
-            if (QuestionManager.Instance.NetQuestionType.Value.Equals("auction"))
-            {
-                QuestionManager.Instance.AuctionQuestionContinue();
-            }
+            QuestionTypeCat();
+            QuestionTypeAuction();
         }
 
-        //ActivePlayerChangeColorClientRpc(index);
-        ChangeColorServerRpc(index);
+        HostManager.Instance.Messages.ChangeColorServerRpc(index);
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void ChangeColorServerRpc(int index)
+    private void QuestionTypeCat()
     {
-        ActivePlayerChangeColorClientRpc(index);
-    }
-
-    [ClientRpc]
-    private void ActivePlayerChangeColorClientRpc(int index)
-    {
-        ResetColorsClientRpc();
-
-        // 191 121 164 Pink
-        Players[index].GetComponent<Image>().color = new Color32(191, 121, 164, 255);
-    }
-
-    [ClientRpc]
-    public void ResetColorsClientRpc()
-    {
-        foreach (var player in Players)
+        if (QuestionManager.Instance.NetQuestionType.Value.Equals("cat"))
         {
-            // 69 121 164  Blue
-            player.GetComponent<Image>().color = new Color32(64, 121, 164, 255);
+            QuestionManager.Instance.CatQuestionContinue();
+        }
+    }
+
+    private void QuestionTypeAuction()
+    {
+        if (QuestionManager.Instance.NetQuestionType.Value.Equals("auction"))
+        {
+            QuestionManager.Instance.AuctionQuestionContinue();
         }
     }
 }

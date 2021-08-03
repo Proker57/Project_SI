@@ -1,11 +1,9 @@
-using System.Collections.Generic;
 using MLAPI;
-using MLAPI.NetworkVariable.Collections;
 using UnityEngine;
 
 namespace BOYAREngine.Game
 {
-    public class HostMenu : MonoBehaviour
+    public class HostMenu : NetworkBehaviour
     {
         [SerializeField] private GameObject _menuGameObject;
         [SerializeField] private GameObject _answerPanel;
@@ -41,15 +39,7 @@ namespace BOYAREngine.Game
         {
             if (GameManager.Instance.Round < GameManager.Instance.Rounds.Count - 1)
             {
-                GameManager.Instance.QuestionButtonsList = new List<NetworkObject>();
-
-                GameManager.Instance.NetThemeNames = new NetworkList<string>();
-                GameManager.Instance.NetQuestionPrice = new NetworkDictionary<Vector2, string>();
-
-                GameManager.Instance.Round++;
-                GameManager.Instance.HostCreate.SetupHostRound();
-
-                HostManager.Instance.Messages.SetupRoundClientRpc();
+                HostManager.Instance.Messages.NextRoundClientRpc();
             }
         }
     }

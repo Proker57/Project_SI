@@ -1,5 +1,8 @@
+using BOYAREngine.Net;
 using MLAPI;
 using MLAPI.Messaging;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace BOYAREngine.Game
 {
@@ -24,6 +27,26 @@ namespace BOYAREngine.Game
             }
         }
 
+        [ServerRpc(RequireOwnership = false)]
+        public void ChangeColorServerRpc(int index)
+        {
+            ActivePlayerChangeColorClientRpc(index);
+        }
+
+        [ClientRpc]
+        public void NextRoundClientRpc()
+        {
+            GameManager.Instance.ClearData();
+            GameManager.Instance.Round++;
+
+            if (IsHost)
+            {
+                HostManager.Instance.SetupHostRound();
+                HostManager.Instance.SendThemeNames();
+                HostManager.Instance.SendQuestionPrices();
+            }
+        }
+
         [ClientRpc]
         private void DisableAnswerButtonClientRpc()
         {
@@ -33,7 +56,7 @@ namespace BOYAREngine.Game
         [ClientRpc]
         public void SetQuestionPriceClientRpc(int price)
         {
-            GameManager.Instance.QuestionPrice = price;
+            GameManager.Instance.QuestionPriceCurrent = price;
         }
 
         [ClientRpc]
@@ -43,9 +66,22 @@ namespace BOYAREngine.Game
         }
 
         [ClientRpc]
-        public void SetupRoundClientRpc()
+        private void ActivePlayerChangeColorClientRpc(int index)
         {
-            HostManager.Instance.SetupRound();
+            ResetColorsClientRpc();
+
+            // 191 121 164 Pink
+            GameManager.Instance.Players[index].GetComponent<Image>().color = new Color32(191, 121, 164, 255);
+        }
+
+        [ClientRpc]
+        public void ResetColorsClientRpc()
+        {
+            foreach (var player in GameManager.Instance.Players)
+            {
+                // 69 121 164  Blue
+                player.GetComponent<Image>().color = new Color32(64, 121, 164, 255);
+            }
         }
     }
 }

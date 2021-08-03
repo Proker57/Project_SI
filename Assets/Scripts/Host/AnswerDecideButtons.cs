@@ -8,7 +8,7 @@ namespace BOYAREngine.Game
         {
             gameObject.SetActive(false);
 
-            GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().Points.Value += GameManager.Instance.QuestionPrice;
+            GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().Points.Value += GameManager.Instance.QuestionPriceCurrent;
 
             QuestionManager.Instance.IsRightAnswer = true;
             QuestionManager.Instance.ShowAnswerHost(GameManager.Instance.ThemeIndexCurrent, GameManager.Instance.QuestionIndexCurrent);
@@ -18,7 +18,7 @@ namespace BOYAREngine.Game
         {
             gameObject.SetActive(false);
 
-            GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().Points.Value -= GameManager.Instance.QuestionPrice;
+            GameManager.Instance.Players[GameManager.Instance.ActivePlayer].GetComponent<PlayerData>().Points.Value -= GameManager.Instance.QuestionPriceCurrent;
 
             QuestionManager.Instance.IsRightAnswer = false;
             QuestionManager.Instance.ShowAnswerHost(GameManager.Instance.ThemeIndexCurrent, GameManager.Instance.QuestionIndexCurrent);

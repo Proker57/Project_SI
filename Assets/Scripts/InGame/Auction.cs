@@ -64,13 +64,13 @@ namespace BOYAREngine.Game
                 {
                     if (GameManager.Instance.Players[i].GetComponent<PlayerData>().OwnerClientId == GameManager.Instance.NetId)
                     {
-                        if (GameManager.Instance.Players[i].GetComponent<PlayerData>().Points.Value >= GameManager.Instance.QuestionPrice)
+                        if (GameManager.Instance.Players[i].GetComponent<PlayerData>().Points.Value >= GameManager.Instance.QuestionPriceCurrent)
                         {
                             if (_isFirstBet)
                             {
                                 Bets[i].Value = GameManager.Instance.QuestionPrice.ToString();
                                 _texts[i].text = Bets[i].Value;
-                                _currentBet = GameManager.Instance.QuestionPrice;
+                                _currentBet = GameManager.Instance.QuestionPriceCurrent;
                                 GameManager.Instance.Players[i].GetComponent<PlayerData>().AuctionBet.Value = _currentBet;
                                 _isFirstBet = false;
                             }

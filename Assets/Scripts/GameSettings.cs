@@ -8,11 +8,18 @@ namespace BOYAREngine.Game
         [SerializeField] private GameObject _settingsPanel;
         [SerializeField] private GameObject _infoPanel;
 
+        [SerializeField] private InputField _roundTimerInputField;
         [SerializeField] private InputField _questionTimerInputField;
         [SerializeField] private InputField _answerTimerInputField;
 
         private void Start()
         {
+            // Round timer
+            _roundTimerInputField.onValueChanged.AddListener(delegate
+            {
+                RoundTimerInputField_OnTImeChanged(_roundTimerInputField);
+            });
+
             // Question timer
             _questionTimerInputField.onValueChanged.AddListener(delegate
             {
@@ -34,6 +41,14 @@ namespace BOYAREngine.Game
         public void OnInfoClick()
         {
             _infoPanel.SetActive(!_infoPanel.activeSelf);
+        }
+
+        private void RoundTimerInputField_OnTImeChanged(InputField input)
+        {
+            if (input.text != null)
+            {
+                QuestionManager.Instance.RoundTimer = int.Parse(input.text);
+            }
         }
 
         private void QuestionTimerInputField_OnNameChanged(InputField input)
