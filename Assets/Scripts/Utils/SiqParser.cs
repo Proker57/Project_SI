@@ -51,10 +51,7 @@ namespace Parse
                     // <round>
                     foreach (XmlNode roundNode in rounds)
                     {
-                        // Reload ThemeList
                         _themes = new List<Theme>();
-
-                        // _roundName
                         _roundName = roundNode.Attributes?["name"].Value;
 
                         // <themes>
@@ -63,7 +60,6 @@ namespace Parse
                             // <theme>
                             foreach (XmlNode themeNode in roundChild)
                             {
-                                // _themeName
                                 _themeName = themeNode.Attributes?["name"].Value;
 
                                 _info = null;
@@ -71,7 +67,6 @@ namespace Parse
                                 // <questions>
                                 foreach (XmlNode questionsNode in themeNode.ChildNodes)
                                 {
-                                    // Reload QuestionList
                                     _questions = new List<Question>();
 
                                     // <info>
@@ -93,9 +88,7 @@ namespace Parse
                                         {
                                             if (questionNode.Name == "question")
                                             {
-                                                // Reload AnswerList
                                                 _answers = new List<string>();
-                                                // Price
                                                 _price = questionNode.Attributes?["price"].Value;
 
                                                 _type = null;
@@ -139,10 +132,8 @@ namespace Parse
                                                             // <atom>
                                                             foreach (XmlNode atom in questionChild.ChildNodes)
                                                             {
-                                                                // Has Attribute
                                                                 if (atom.Attributes?["type"] != null)
                                                                 {
-                                                                    // Atom marker for image should be in the answer block
                                                                     if (atom.Attributes?["type"].Value == "marker")
                                                                     {
                                                                         _isMarker = true;
@@ -171,7 +162,6 @@ namespace Parse
                                                                             _audioData = null;
                                                                         }
                                                                     }
-
 
                                                                     // Audio
                                                                     if (atom.Attributes?["type"].Value == "voice")

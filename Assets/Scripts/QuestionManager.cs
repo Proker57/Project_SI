@@ -51,14 +51,12 @@ namespace BOYAREngine.Game
         [SerializeField] private Image _answerImage;
 
         [Space]
-        // Timer
         public float QuestionTimer;
         public float AnswerTimer;
 
         [HideInInspector] public bool IsRightAnswer;
         public bool IsShowQuestion;
 
-        // Base
         public NetworkVariable<string> NetQuestionType = new NetworkVariable<string>(new NetworkVariableSettings { ReadPermission = NetworkVariablePermission.Everyone, WritePermission = NetworkVariablePermission.ServerOnly });
         private const string Cat = "cat";
         private const string Auction = "auction";
@@ -106,8 +104,6 @@ namespace BOYAREngine.Game
             }
 
             ReadMusicInQuestion(round, themeIndex, questionIndex);
-
-            // Question Image
             ReadImageInQuestion(round, themeIndex, questionIndex);
 
             if (NetQuestionType.Value != null)
@@ -147,9 +143,9 @@ namespace BOYAREngine.Game
             {
                 AudioSource.gameObject.SetActive(true);
 
-                using (var ms = new MemoryStream(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].AudioData))
+                using (var memoryStream = new MemoryStream(GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].AudioData))
                 {
-                    using (var mpeg = new MpegFile(ms))
+                    using (var mpeg = new MpegFile(memoryStream))
                     {
                         var samples = new float[mpeg.Length];
                         mpeg.ReadSamples(samples, 0, samples.Length);
@@ -191,7 +187,6 @@ namespace BOYAREngine.Game
             var isLastChunk = false;
             for (var i = 0; i < chunks.Count; i++)
             {
-                Debug.Log(chunks[i].Length);
                 if (i == chunks.Count - 1)
                 {
                     isLastChunk = true;

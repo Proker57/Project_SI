@@ -9,11 +9,14 @@ namespace BOYAREngine.Game
         public static RoundManager Instance;
 
         [SerializeField] private Text _hostTimerDisplayText;
-        private int _minutes;
-        private int _seconds;
+        [SerializeField] private GameObject _introGameObject;
+        [SerializeField] private Text _roundNameText;
 
         public float RoundTimer;
         public bool IsLimited;
+
+        private int _minutes;
+        private int _seconds;
 
         private Coroutine _timerDisplayCoroutine;
         private Coroutine _timerCoroutine;
@@ -88,6 +91,20 @@ namespace BOYAREngine.Game
             StopAllCoroutines();
             _timerCoroutine = null;
             _timerDisplayCoroutine = null;
+        }
+
+        public void ShowIntro(string roundName)
+        {
+            _roundNameText.text = roundName;
+            _introGameObject.SetActive(true);
+
+            Invoke(nameof(CloseIntro), 3f);
+        }
+
+        private void CloseIntro()
+        {
+            _introGameObject.SetActive(false);
+            _roundNameText.text = "";
         }
     }
 }

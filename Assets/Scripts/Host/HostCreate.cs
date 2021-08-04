@@ -12,14 +12,13 @@ namespace BOYAREngine.Game
         [SerializeField] private GameObject _hostPrefab;
         [SerializeField] private Transform _hostSpawnParent;
 
-        private AudioClip _audioClip;
-
         public void OnHost()
         {
             NetworkManager.Singleton.StartHost();
 
             _hostMenuGameObject.SetActive(true);
             HostManager.Instance.SetupHostRound();
+            RoundManager.Instance.ShowIntro(GameManager.Instance.Rounds[GameManager.Instance.Round].Name);
             SpawnHost(NetworkManager.Singleton.ServerClientId);
             StartRoundTimer();
         }

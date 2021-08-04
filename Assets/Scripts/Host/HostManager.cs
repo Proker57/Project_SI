@@ -60,17 +60,13 @@ namespace BOYAREngine.Game
             if (IsServer)
             {
                 SpawnClientPlayer(id);
-
-                SendThemeNames();
-                SendQuestionPrices();
+                SyncDataOnClientConnection(id);
             }
 
             if (NetworkManager.Singleton.LocalClientId == id)
             {
                 StartCoroutine(RenamePlayer(id));
-
                 GameManager.Instance.NetId = id;
-
                 SetGameStarted(true);
             }
         }
@@ -147,6 +143,13 @@ namespace BOYAREngine.Game
             _gameStateGameObject.SetActive(isGameStarted);
         }
 
+        private void SyncDataOnClientConnection(ulong id)
+        {
+            SendThemeNames(id);
+            SendQuestionPrices(id);
+            SendRoundName(id, GameManager.Instance.Rounds[GameManager.Instance.Round].Name);
+        }
+
         public void SendThemeNames()
         {
             for (var i = 0; i < GameManager.Instance.ThemeNames.Count; i++)
@@ -155,6 +158,16 @@ namespace BOYAREngine.Game
             }
 
             SetThemeNameClientRpc();
+        }
+
+        public void SendThemeNames(ulong id)
+        {
+            for (var i = 0; i < GameManager.Instance.ThemeNames.Count; i++)
+            {
+                SendThemeNamesWithIdClientRpc(id, GameManager.Instance.ThemeNames[i]);
+            }
+
+            SetThemeNameWithIdClientRpc(id);
         }
 
         [ClientRpc]
@@ -167,9 +180,27 @@ namespace BOYAREngine.Game
         }
 
         [ClientRpc]
+        public void SendThemeNamesWithIdClientRpc(ulong id, string themeName)
+        {
+            if (!IsHost && NetworkManager.Singleton.LocalClientId == id)
+            {
+                GameManager.Instance.ThemeNames.Add(themeName);
+            }
+        }
+
+        [ClientRpc]
         public void SetThemeNameClientRpc()
         {
             if (!IsHost)
+            {
+                SetThemeName();
+            }
+        }
+
+        [ClientRpc]
+        public void SetThemeNameWithIdClientRpc(ulong id)
+        {
+            if (!IsHost && NetworkManager.Singleton.LocalClientId == id)
             {
                 SetThemeName();
             }
@@ -191,6 +222,7 @@ namespace BOYAREngine.Game
         public void SendQuestionPrices()
         {
             var round = GameManager.Instance.Round;
+
             for (var themeIndex = 0; themeIndex < GameManager.Instance.Rounds[round].Themes.Count; themeIndex++)
             {
                 for (var questionIndex = 0; questionIndex < GameManager.Instance.Rounds[round].Themes[themeIndex].Questions.Count; questionIndex++)
@@ -202,10 +234,34 @@ namespace BOYAREngine.Game
             SetQuestionPricesClientRpc();
         }
 
+        public void SendQuestionPrices(ulong id)
+        {
+            var round = GameManager.Instance.Round;
+
+            for (var themeIndex = 0; themeIndex < GameManager.Instance.Rounds[round].Themes.Count; themeIndex++)
+            {
+                for (var questionIndex = 0; questionIndex < GameManager.Instance.Rounds[round].Themes[themeIndex].Questions.Count; questionIndex++)
+                {
+                    SendQuestionPriceWithIdClientRpc(id, themeIndex, questionIndex, GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Price);
+                }
+            }
+
+            SetQuestionPricesWithIdClientRpc(id);
+        }
+
         [ClientRpc]
         public void SendQuestionPriceClientRpc(int themeIndex, int questionIndex, string price)
         {
             if (!IsHost)
+            {
+                GameManager.Instance.QuestionPrice.Add(new Vector2(themeIndex, questionIndex), price);
+            }
+        }
+
+        [ClientRpc]
+        public void SendQuestionPriceWithIdClientRpc(ulong id, int themeIndex, int questionIndex, string price)
+        {
+            if (!IsHost && NetworkManager.Singleton.LocalClientId == id)
             {
                 GameManager.Instance.QuestionPrice.Add(new Vector2(themeIndex, questionIndex), price);
             }
@@ -224,6 +280,50 @@ namespace BOYAREngine.Game
                     questions[index].GetComponent<QuestionBase>().Price.text = price.Value;
                     index++;
                 }
+            }
+        }
+
+        [ClientRpc]
+        public void SetQuestionPricesWithIdClientRpc(ulong id)
+        {
+            if (!IsHost && NetworkManager.Singleton.LocalClientId == id)
+            {
+                var questions = GameObject.FindGameObjectsWithTag("Question");
+                var index = 0;
+
+                foreach (var price in GameManager.Instance.QuestionPrice)
+                {
+                    questions[index].GetComponent<QuestionBase>().Price.text = price.Value;
+                    index++;
+                }
+            }
+        }
+
+        public void SendRoundName(string roundName)
+        {
+            SendRoundNameClientRpc(roundName);
+        }
+
+        private void SendRoundName(ulong id, string roundName)
+        {
+            SendRoundNameWithIdClientRpc(id, roundName);
+        }
+
+        [ClientRpc]
+        private void SendRoundNameClientRpc(string roundName)
+        {
+            if (!IsHost)
+            {
+                RoundManager.Instance.ShowIntro(roundName);
+            }
+        }
+
+        [ClientRpc]
+        private void SendRoundNameWithIdClientRpc(ulong id, string roundName)
+        {
+            if (!IsHost && NetworkManager.Singleton.LocalClientId == id)
+            {
+                RoundManager.Instance.ShowIntro(roundName);
             }
         }
 

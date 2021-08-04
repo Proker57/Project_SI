@@ -42,6 +42,8 @@ namespace BOYAREngine.Game
             if (IsHost)
             {
                 HostManager.Instance.SetupHostRound();
+                RoundManager.Instance.ShowIntro(GameManager.Instance.Rounds[GameManager.Instance.Round].Name);
+                HostManager.Instance.SendRoundName(GameManager.Instance.Rounds[GameManager.Instance.Round].Name);
                 HostManager.Instance.SendThemeNames();
                 HostManager.Instance.SendQuestionPrices();
 
