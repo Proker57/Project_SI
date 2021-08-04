@@ -44,6 +44,8 @@ namespace BOYAREngine.Game
                 HostManager.Instance.SetupHostRound();
                 HostManager.Instance.SendThemeNames();
                 HostManager.Instance.SendQuestionPrices();
+
+                RoundManager.Instance.StartRoundTimer();
             }
         }
 

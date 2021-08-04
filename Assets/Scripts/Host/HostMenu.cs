@@ -39,6 +39,8 @@ namespace BOYAREngine.Game
         {
             if (GameManager.Instance.Round < GameManager.Instance.Rounds.Count - 1)
             {
+                RoundManager.Instance.StopTimer();
+
                 HostManager.Instance.Messages.NextRoundClientRpc();
             }
         }

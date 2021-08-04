@@ -52,7 +52,6 @@ namespace BOYAREngine.Game
 
         [Space]
         // Timer
-        public float RoundTimer;
         public float QuestionTimer;
         public float AnswerTimer;
 
@@ -287,7 +286,7 @@ namespace BOYAREngine.Game
             _answer.text = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Answers[0];
             _netAnswer.Value = _answer.text;
 
-            // Answer Image
+            // Image
             if (GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].IsAnswerImage)
             {
                 _answerImage.gameObject.SetActive(true);
@@ -321,7 +320,6 @@ namespace BOYAREngine.Game
 
             IsRightAnswer = false;
 
-            // Client
             ShowAnswerClientRpc();
 
             Invoke(nameof(BackToThemeClientRpc), AnswerTimer);
@@ -416,7 +414,6 @@ namespace BOYAREngine.Game
 
             }
         }
-
 
         public void StopAllCoroutinesForClients()
         {

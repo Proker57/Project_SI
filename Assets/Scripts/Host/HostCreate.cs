@@ -21,6 +21,7 @@ namespace BOYAREngine.Game
             _hostMenuGameObject.SetActive(true);
             HostManager.Instance.SetupHostRound();
             SpawnHost(NetworkManager.Singleton.ServerClientId);
+            StartRoundTimer();
         }
 
         private void SpawnHost(ulong id)
@@ -28,6 +29,11 @@ namespace BOYAREngine.Game
             var go = Instantiate(_hostPrefab, _hostSpawnParent);
             go.gameObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(id);
             go.gameObject.GetComponent<HostData>().Name.Value = GameManager.Instance.Name;
+        }
+
+        private void StartRoundTimer()
+        {
+            RoundManager.Instance.StartRoundTimer();
         }
     }
 }

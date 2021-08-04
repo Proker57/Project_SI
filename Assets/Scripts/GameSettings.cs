@@ -47,7 +47,15 @@ namespace BOYAREngine.Game
         {
             if (input.text != null)
             {
-                QuestionManager.Instance.RoundTimer = int.Parse(input.text);
+                if (int.Parse(input.text) == 0)
+                {
+                    RoundManager.Instance.IsLimited = false;
+                }
+                else
+                {
+                    RoundManager.Instance.RoundTimer = int.Parse(input.text);
+                    RoundManager.Instance.IsLimited = true;
+                }
             }
         }
 
