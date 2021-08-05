@@ -66,6 +66,7 @@ namespace BOYAREngine.Game
         [ClientRpc]
         public void TurnOnAuctionPanelsClientRpc()
         {
+            GameManager.Instance.GetComponent<Auction>().ResetValues();
             GameManager.Instance.GetComponent<Auction>().TurnOnPanels();
         }
 

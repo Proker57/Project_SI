@@ -9,6 +9,7 @@ namespace BOYAREngine.Game
     public class Auction : NetworkBehaviour
     {
         [SerializeField] private GameObject[] _pointPanels;
+        [SerializeField] private GameObject _buttons;
         [Space]
         [SerializeField] private Text[] _texts;
 
@@ -135,6 +136,11 @@ namespace BOYAREngine.Game
 
         public void TurnOnPanels()
         {
+            if (!IsHost)
+            {
+                _buttons.SetActive(true);
+            }
+
             for (var i = 0; i < GameManager.Instance.Players.Count; i++)
             {
                 _pointPanels[i].SetActive(true);

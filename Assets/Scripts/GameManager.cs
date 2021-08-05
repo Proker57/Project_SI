@@ -95,8 +95,15 @@ public class GameManager : NetworkBehaviour
             Directory.CreateDirectory(PackagePath);
         }
 
+        var emptyItem = new List<string> { "Выберите пакет вопросов" };
+        Dropdown.ClearOptions();
+        ClearPackageInfo();
+        Dropdown.AddOptions(emptyItem);
+
         PackageFileNames = Directory.GetFiles(PackagePath, "*.siq").Select(Path.GetFileName).ToList();
         Dropdown.AddOptions(PackageFileNames);
+
+        PackagePathText.text = PackagePath;
     }
 
     public void ParsePackage()
@@ -151,6 +158,7 @@ public class GameManager : NetworkBehaviour
         else
         {
             CreateHostButton.interactable = false;
+            ClearPackageInfo();
         }
     }
 
@@ -183,6 +191,12 @@ public class GameManager : NetworkBehaviour
         }
 
         HostManager.Instance.Messages.ChangeColorServerRpc(index);
+    }
+
+    private void ClearPackageInfo()
+    {
+        AuthorNameText.text = "";
+        DescriptionText.text = "";
     }
 
     private void QuestionTypeCat()

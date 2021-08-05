@@ -26,10 +26,10 @@ namespace BOYAREngine.Game
 
         private void ShowQuestionHost()
         {
-            QuestionManager.Instance.ShowQuestionHost(ThemeIndex, QuestionIndex);
-
             GameManager.Instance.ThemeIndexCurrent = ThemeIndex;
             GameManager.Instance.QuestionIndexCurrent = QuestionIndex;
+
+            QuestionManager.Instance.ShowQuestionHost(ThemeIndex, QuestionIndex);
 
             GetComponent<Button>().interactable = false;
             GetComponentInChildren<Text>().text = null;

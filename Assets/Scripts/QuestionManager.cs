@@ -126,8 +126,9 @@ namespace BOYAREngine.Game
                 if (NetQuestionType.Value.Equals(Auction))
                 {
                     HostManager.Instance.Messages.TurnOnAuctionPanelsClientRpc();
+                    GameManager.Instance.GetComponent<Auction>().ResetValues();
                     _auctionPanel.SetActive(true);
-                    _auctionButtons.SetActive(true);
+                    //_auctionButtons.SetActive(true);
                     _auctionPointsPanel.SetActive(true);
                 }
             }
@@ -250,11 +251,9 @@ namespace BOYAREngine.Game
         [ClientRpc]
         private void ReceiveQuestionImageChunkClientRpc(byte[] chunk, bool isLast)
         {
-            if (IsHost == false)
+            if (!IsHost)
             {
                 _imageQuestionChunksList.Add(chunk);
-
-                Debug.Log(chunk.Length);
 
                 if (isLast)
                 {
@@ -383,6 +382,8 @@ namespace BOYAREngine.Game
             _themePanel.SetActive(true);
             _questionPanel.SetActive(false);
             _answerPanel.SetActive(false);
+            _auctionPanel.SetActive(false);
+            _catPanel.SetActive(false);
 
             _imageQuestionChunksList = new List<byte[]>();
             _imageAnswerChunksList = new List<byte[]>();
@@ -402,11 +403,10 @@ namespace BOYAREngine.Game
             {
                 GameManager.Instance.QuestionsLeft--;
 
-                if (GameManager.Instance.QuestionsLeft == 0)
+                if (GameManager.Instance.QuestionsLeft <= 0)
                 {
                     HostManager.Instance.Messages.NextRoundClientRpc();
                 }
-
             }
         }
 
@@ -468,6 +468,10 @@ namespace BOYAREngine.Game
             if (!IsHost)
             {
                 _auctionPanel.SetActive(false);
+            }
+            else
+            {
+                GameManager.Instance.GetComponent<Auction>().ResetValues();
             }
         }
 
