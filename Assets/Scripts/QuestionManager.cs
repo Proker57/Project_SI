@@ -126,7 +126,6 @@ namespace BOYAREngine.Game
                 if (NetQuestionType.Value.Equals(Auction))
                 {
                     HostManager.Instance.Messages.TurnOnAuctionPanelsClientRpc();
-                    GameManager.Instance.GetComponent<Auction>().ResetValues();
                     _auctionPanel.SetActive(true);
                     //_auctionButtons.SetActive(true);
                     _auctionPointsPanel.SetActive(true);
@@ -275,6 +274,7 @@ namespace BOYAREngine.Game
             _answerDecideHostPanel.SetActive(false);
             _answerImage.gameObject.SetActive(_netIsAnswerImage.Value);
             IsShowQuestion = false;
+            StopAllCoroutinesForClientsClientRpc();
 
             var round = GameManager.Instance.Round;
             _answer.text = GameManager.Instance.Rounds[round].Themes[themeIndex].Questions[questionIndex].Answers[0];
@@ -480,6 +480,11 @@ namespace BOYAREngine.Game
             _infoPanel.SetActive(isActive);
 
             _infoText.text = text;
+        }
+
+        public void EnableAnswerDecideHostPanel()
+        {
+            _answerDecideHostPanel.SetActive(true);
         }
 
         private void ResetQuestionData()

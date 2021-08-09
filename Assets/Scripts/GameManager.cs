@@ -25,6 +25,9 @@ public class GameManager : NetworkBehaviour
 
     [Header("UI")]
     public Button CreateHostButton;
+    public Text CreateHostText;
+    public Text CreateHostDescription;
+    public Image CreateHostImage;
     public List<string> PackageFileNames;
     public Dropdown Dropdown;
     public InputField InputName;
@@ -98,6 +101,7 @@ public class GameManager : NetworkBehaviour
         var emptyItem = new List<string> { "Выберите пакет вопросов" };
         Dropdown.ClearOptions();
         ClearPackageInfo();
+        DisableCreateHostButton();
         Dropdown.AddOptions(emptyItem);
 
         PackageFileNames = Directory.GetFiles(PackagePath, "*.siq").Select(Path.GetFileName).ToList();
@@ -142,12 +146,16 @@ public class GameManager : NetworkBehaviour
 
     public void Dropdown_OnValueChanged(Dropdown dropdown)
     {
+        var activeColor = new Color32(1, 100, 99, 255);
         if (dropdown.value != 0)
         {
             ChosenPackage = $"{PackagePath}/{PackageFileNames[dropdown.value - 1]}";
 
             PackagePathText.text = ChosenPackage;
             CreateHostButton.interactable = true;
+            CreateHostText.color = Color.white;
+            CreateHostImage.color = Color.white;
+            CreateHostDescription.color = activeColor;
             IsPacketChosen = true;
 
             var ap = new AuthorParser();
@@ -157,7 +165,7 @@ public class GameManager : NetworkBehaviour
         }
         else
         {
-            CreateHostButton.interactable = false;
+            DisableCreateHostButton();
             ClearPackageInfo();
         }
     }
@@ -191,6 +199,14 @@ public class GameManager : NetworkBehaviour
         }
 
         HostManager.Instance.Messages.ChangeColorServerRpc(index);
+    }
+
+    private void DisableCreateHostButton()
+    {
+        CreateHostButton.interactable = false;
+        CreateHostText.color = Color.black;
+        CreateHostImage.color = Color.black;
+        CreateHostDescription.color = Color.black;
     }
 
     private void ClearPackageInfo()

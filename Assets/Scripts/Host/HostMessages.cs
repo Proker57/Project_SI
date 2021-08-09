@@ -58,6 +58,15 @@ namespace BOYAREngine.Game
         }
 
         [ClientRpc]
+        public void EnableAnswerButtonClientRpc()
+        {
+            if (!IsHost)
+            {
+                QuestionManager.Instance.AnswerButtonGameObject.SetActive(true);
+            }
+        }
+
+        [ClientRpc]
         public void SetQuestionPriceClientRpc(int price)
         {
             GameManager.Instance.QuestionPriceCurrent = price;

@@ -12,6 +12,11 @@ namespace BOYAREngine.Game
         [SerializeField] private InputField _questionTimerInputField;
         [SerializeField] private InputField _answerTimerInputField;
 
+        [Header("UI")]
+        [SerializeField] private Button _settingsButton;
+        [SerializeField] private Button _infoButton;
+        [SerializeField] private Sprite[] _buttonsSprite;
+
         private void Start()
         {
             // Round timer
@@ -35,12 +40,32 @@ namespace BOYAREngine.Game
 
         public void OnSettingsClick()
         {
+            if (!_settingsPanel.activeSelf)
+            {
+                DisableButtons();
+            }
+
             _settingsPanel.SetActive(!_settingsPanel.activeSelf);
+            _settingsButton.image.sprite = _settingsPanel.activeSelf ? _buttonsSprite[1] : _buttonsSprite[0];
         }
 
         public void OnInfoClick()
         {
+            if (!_infoPanel.activeSelf)
+            {
+                DisableButtons();
+            }
+
             _infoPanel.SetActive(!_infoPanel.activeSelf);
+            _infoButton.image.sprite = _infoPanel.activeSelf ? _buttonsSprite[1] : _buttonsSprite[0];
+        }
+
+        private void DisableButtons()
+        {
+            _settingsPanel.SetActive(false);
+            _settingsButton.image.sprite = _settingsPanel.activeSelf ? _buttonsSprite[1] : _buttonsSprite[0];
+            _infoPanel.SetActive(false);
+            _infoButton.image.sprite = _infoPanel.activeSelf ? _buttonsSprite[1] : _buttonsSprite[0];
         }
 
         private void RoundTimerInputField_OnTImeChanged(InputField input)

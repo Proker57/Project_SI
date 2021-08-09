@@ -8,7 +8,7 @@ namespace BOYAREngine.Game
         {
             HostManager.Instance.Messages.SetActivePlayer(GameManager.Instance.NetId);
 
-            QuestionManager.Instance.StopAllCoroutinesForClients();
+            //QuestionManager.Instance.StopAllCoroutinesForClients();
         }
     }
 }
